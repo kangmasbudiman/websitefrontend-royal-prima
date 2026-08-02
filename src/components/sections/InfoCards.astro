@@ -1,0 +1,178 @@
+---
+import type { InfoCard } from "../../lib/types";
+
+export interface Props {
+  info: InfoCard | null;
+}
+
+const { info } = Astro.props;
+
+type Accent = "coral" | "prima" | "teal";
+type Card = {
+  icon: string;
+  title: string;
+  desc: string;
+  ctaLabel: string;
+  ctaSub?: string;
+  href: string;
+  accent: Accent;
+  big?: string;
+};
+
+const cards: Card[] = [];
+if (info) {
+  if (info.emergency_title && info.emergency_phone) {
+    cards.push({
+      icon: "M11 2h2v8h-2zM7 6.6c1.1 0 2 .9 2 2v6c0 1.1-.9 2-2 2s-2-.9-2-2v-6c0-1.1.9-2 2-2zm10 0c1.1 0 2 .9 2 2v6c0 1.1-.9 2-2 2s-2-.9-2-2v-6c0-1.1.9-2 2-2zM3 11h2v8h14v-8h2v8c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2z",
+      title: info.emergency_title ?? "IGD",
+      desc: info.emergency_desc ?? "Layanan Gawat Darurat 24 Jam",
+      ctaLabel: info.emergency_phone,
+      ctaSub: "Tap untuk telepon",
+      href: `tel:${info.emergency_phone}`,
+      accent: "coral",
+      big: info.emergency_phone,
+    });
+  }
+  if (info.timetable_title) {
+    cards.push({
+      icon: "M7 2v2H5a2 2 0 00-2 2v13a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2h-2V2h-2v2H9V2H7zm12 6v11H5V8h14zM7 10v3h3v-3H7zm5 0v3h3v-3h-3zm-5 5v3h3v-3H7zm5 0v3h3v-3h-3z",
+      title: info.timetable_title,
+      desc: info.timetable_desc ?? "Jadwal praktik dokter spesialis",
+      ctaLabel: "Cek Jadwal",
+      ctaSub: "Lihat semua dokter",
+      href: info.timetable_url ?? "/#dokter",
+      accent: "prima",
+    });
+  }
+  if (info.location_title) {
+    cards.push({
+      icon: "M12 2C7.6 2 4 5.6 4 10c0 5.4 7 11.5 7.3 11.8.4.3.9.3 1.3 0C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z",
+      title: info.location_title,
+      desc: info.location_address ?? "",
+      ctaLabel: "Buka Maps",
+      ctaSub: "Rute lokasi",
+      href: info.location_map_url ?? "#",
+      accent: "teal",
+    });
+  }
+}
+
+if (cards.length === 0) return null;
+---
+
+<section class="relative z-20 -mt-20 lg:-mt-24">
+  <div class="wrap">
+    <div class={`grid gap-4 ${cards.length === 3 ? "md:grid-cols-3" : cards.length === 2 ? "md:grid-cols-2" : "max-w-md"}`}>
+      {cards.map((c, idx) => {
+        const isEmergency = c.accent === "coral";
+        const gradient = {
+          coral: "from-coral via-coral-d to-[#7a1a0d]",
+          prima: "from-prima-l via-prima to-prima-d",
+          teal: "from-teal via-teal-d to-[#033a33]",
+        }[c.accent];
+        const soft = {
+          coral: "bg-coral-soft text-coral",
+          prima: "bg-prima-soft text-prima",
+          teal: "bg-teal/10 text-teal",
+        }[c.accent];
+        const ring = {
+          coral: "ring-coral/20",
+          prima: "ring-prima/20",
+          teal: "ring-teal/20",
+        }[c.accent];
+
+        return (
+          <article
+            data-reveal
+            data-reveal-delay={idx * 90}
+            class={`group relative overflow-hidden rounded-3xl bg-white border border-line shadow-[0_18px_50px_-20px_rgba(15,31,58,0.18)] hover:shadow-[0_30px_70px_-25px_rgba(15,31,58,0.28)] transition-all duration-500 hover:-translate-y-1.5 ${isEmergency ? "ring-2 " + ring : ""}`}
+          >
+            {/* Top gradient strip */}
+            <div class={`absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${gradient}`}></div>
+
+            {/* Decorative blob */}
+            <div class={`absolute -top-12 -right-12 w-40 h-40 rounded-full ${soft} opacity-50 blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700`}></div>
+
+            <div class="relative p-7 lg:p-8 flex flex-col h-full">
+              {/* Header: icon + label */}
+              <div class="flex items-start justify-between mb-5">
+                <div class={`relative w-14 h-14 rounded-2xl ${soft} flex items-center justify-center`}>
+                  <svg viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
+                    <path d={c.icon} />
+                  </svg>
+                  {isEmergency && (
+                    <span class="absolute -top-1.5 -right-1.5 flex h-4 w-4">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-coral opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-4 w-4 bg-coral border-2 border-white"></span>
+                    </span>
+                  )}
+                </div>
+
+                {isEmergency && (
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-coral-soft text-coral text-[10px] font-extrabold uppercase tracking-[0.18em]">
+                    <span class="w-1.5 h-1.5 rounded-full bg-coral animate-pulse"></span>
+                    Online 24/7
+                  </span>
+                )}
+              </div>
+
+              {/* Title */}
+              <h3 class="font-extrabold text-[19px] lg:text-[20px] leading-tight tracking-tight">
+                {c.title}
+              </h3>
+
+              {/* Big content: phone number for emergency, desc otherwise */}
+              {isEmergency && c.big ? (
+                <a
+                  href={c.href}
+                  class="mt-2 block font-mono font-extrabold text-[clamp(26px,3.5vw,34px)] tracking-tight text-ink hover:text-coral transition-colors leading-none"
+                >
+                  {c.big}
+                </a>
+              ) : null}
+
+              <p class={`text-[14px] text-ink-soft/80 leading-relaxed ${isEmergency ? "mt-3" : "mt-2"} ${!isEmergency ? "flex-1" : ""}`}>
+                {c.desc}
+              </p>
+
+              {/* CTA */}
+              <a
+                href={c.href}
+                target={c.href.startsWith("http") ? "_blank" : undefined}
+                rel="noreferrer"
+                class={`mt-6 group/cta inline-flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-gradient-to-r ${gradient} text-white font-bold text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all`}
+              >
+                <span class="flex items-center gap-2.5">
+                  <span class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
+                    {c.accent === "coral" ? (
+                      <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
+                        <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z" />
+                      </svg>
+                    ) : c.accent === "prima" ? (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
+                        <path d="M5 12h14M13 6l6 6-6 6" />
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
+                        <path d="M12 2C7.6 2 4 5.6 4 10c0 5.4 7 11.5 7.3 11.8.4.3.9.3 1.3 0C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z" />
+                      </svg>
+                    )}
+                  </span>
+                  <span class="flex flex-col leading-none">
+                    <span class="text-[10px] uppercase tracking-[0.16em] text-white/75 font-bold">
+                      {c.ctaSub ?? "Selengkapnya"}
+                    </span>
+                    <span class="text-[15px] font-extrabold">{c.ctaLabel}</span>
+                  </span>
+                </span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 group-hover/cta:translate-x-1 transition-transform">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </a>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </div>
+</section>

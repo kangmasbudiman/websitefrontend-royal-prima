@@ -1,0 +1,639 @@
+---
+import type { Poliklinik, Dokter, Jadwal } from "../../lib/types";
+import { gambarPertama } from "../../lib/utils";
+
+export interface Props {
+  items: Poliklinik[];
+  dokter?: Dokter[];
+  jadwal?: Jadwal[];
+}
+
+const { items, dokter = [], jadwal = [] } = Astro.props;
+if (items.length === 0) return null;
+
+// === Helpers: derive doctor + schedule info per poliklinik ===
+const DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+const todayIdx = new Date().getDay();
+const todayName = DAYS[todayIdx];
+
+function poliDoctors(poliId: number | null): Dokter[] {
+  if (poliId == null) return [];
+  return dokter.filter((d) => d.poliklinikid === poliId && d.status !== false);
+}
+
+function nextSchedule(poliId: number | null): { hari: string; jam: string } | null {
+  const docs = poliDoctors(poliId);
+  if (!docs.length) return null;
+  const ids = new Set(docs.map((d) => d.id));
+  const js = jadwal.filter((j) => ids.has(j.dokterid));
+  if (!js.length) return null;
+
+  const order = [...DAYS.slice(todayIdx), ...DAYS.slice(0, todayIdx)];
+  const todayJs = js.filter((j) => j.hari === todayName).sort((a, b) => a.jamMulai.localeCompare(b.jamMulai));
+  const upcoming = order.slice(1).map((d) => js.filter((j) => j.hari === d).sort((a, b) => a.jamMulai.localeCompare(b.jamMulai))).flat();
+
+  const pick = todayJs[0] ?? upcoming[0];
+  if (!pick) return null;
+  return { hari: pick.hari, jam: `${pick.jamMulai.slice(0, 5)}–${pick.jamSelesai.slice(0, 5)}` };
+}
+
+function shortName(nama: string): string {
+  // Remove titles & qualifications, keep core name + specialist code
+  return nama
+    .replace(/^dr\.?\s*/i, "")
+    .replace(/^DR\.?\s+/i, "")
+    .replace(/^Prof\.?\s+/i, "")
+    .trim();
+}
+
+function specialistCode(nama: string): string | null {
+  const m = nama.match(/[Ss][Pp]\.?\s*([A-Z]{1,3}(?:[-/][A-Z]{1,3})?)/);
+  return m ? `Sp.${m[1]}` : null;
+}
+
+const USE_STOCK_PHOTOS = true;
+
+type StockMap = { keys: string[]; url: string };
+const STOCK_PHOTOS: StockMap[] = [
+  { keys: ["mata"], url: "https://plus.unsplash.com/premium_photo-1661596762224-d1ca6d2eca40?auto=format&fit=crop&w=900&q=80" },
+  { keys: ["jantung"], url: "https://plus.unsplash.com/premium_photo-1723478527060-db98550c1c07?auto=format&fit=crop&w=900&q=80" },
+  { keys: ["anak"], url: "https://images.unsplash.com/photo-1632053002928-1919605ee6f7?auto=format&fit=crop&w=900&q=80" },
+  { keys: ["paru"], url: "https://plus.unsplash.com/premium_photo-1666299728535-7947d112ff2a?auto=format&fit=crop&w=900&q=80" },
+  { keys: ["tht"], url: "https://plus.unsplash.com/premium_photo-1661779725491-e997e70928fc?auto=format&fit=crop&w=900&q=80" },
+  { keys: ["syaraf"], url: "https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=900&q=80" },
+  { keys: ["bedah"], url: "https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=900&q=80" },
+  { keys: ["orthopedi", "tulang"], url: "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&w=900&q=80" },
+  { keys: ["obgyn", "kandungan", "kebidanan"], url: "https://plus.unsplash.com/premium_photo-1661606399669-c84a614fb976?auto=format&fit=crop&w=900&q=80" },
+];
+const DEFAULT_STOCK = "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=900&q=80";
+
+function photoFor(nama: string): string {
+  const n = nama.toLowerCase();
+  for (const entry of STOCK_PHOTOS) {
+    if (entry.keys.some((k) => n.includes(k))) return entry.url;
+  }
+  return DEFAULT_STOCK;
+}
+
+function stripTags(s: string | null): string {
+  return s ? s.replace(/<[^>]+>/g, "") : "";
+}
+
+// Color palette cycles for visual variety
+const ACCENTS = [
+  { ring: "ring-coral/30", dot: "bg-coral", text: "text-coral", soft: "bg-coral-soft" },
+  { ring: "ring-prima/30", dot: "bg-prima", text: "text-prima", soft: "bg-prima-soft" },
+  { ring: "ring-teal/30", dot: "bg-teal", text: "text-teal", soft: "bg-teal/15" },
+] as const;
+
+// Group jadwal per dokter, sorted by day-of-week
+const DAY_ORDER = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+function dokterJadwal(dokterId: number | null) {
+  if (dokterId == null) return [];
+  return jadwal
+    .filter((j) => j.dokterid === dokterId && j.status !== false)
+    .sort((a, b) => DAY_ORDER.indexOf(a.hari) - DAY_ORDER.indexOf(b.hari))
+    .map((j) => ({ hari: j.hari, jam: `${j.jamMulai.slice(0, 5)}–${j.jamSelesai.slice(0, 5)}` }));
+}
+
+// Pre-build full clinic data for the modal
+const clinicData = items.map((p) => {
+  const useDb = !USE_STOCK_PHOTOS || p.nama.toLowerCase().includes("penyakit dalam");
+  const dbImg = useDb ? gambarPertama(p.poto) : "";
+  const docs = poliDoctors(p.id);
+  return {
+    id: p.id,
+    nama: p.nama,
+    deskripsi: stripTags(p.deskripsi),
+    lokasi: p.lokasi ?? null,
+    img: dbImg || photoFor(p.nama),
+    doctors: docs.map((d) => ({
+      shortNama: shortName(d.nama),
+      code: specialistCode(d.nama),
+      spesialist: d.spesialist ?? null,
+      initial: shortName(d.nama).match(/^[A-Za-z]/)?.[0] ?? "?",
+      photo: gambarPertama(d.potourl) || null,
+      schedules: dokterJadwal(d.id),
+    })),
+  };
+});
+
+// Bento layout: first card featured (large), last card wide
+const featured = items[0];
+const featuredImg = gambarPertama(featured.poto) || photoFor(featured.nama);
+const featuredDocs = poliDoctors(featured.id);
+const featuredSched = nextSchedule(featured.id);
+const featuredCodes = [...new Set(featuredDocs.map((d) => specialistCode(d.nama)).filter(Boolean))] as string[];
+const rest = items.slice(1);
+const lastIdx = rest.length - 1;
+---
+
+<section id="poliklinik" class="section relative overflow-hidden">
+  <div class="absolute inset-0 -z-10 bg-gradient-to-b from-canvas via-paper to-canvas"></div>
+  <div class="absolute top-40 -left-32 w-96 h-96 rounded-full bg-prima-soft/50 blur-3xl pointer-events-none"></div>
+  <div class="absolute bottom-40 -right-32 w-96 h-96 rounded-full bg-coral-soft/40 blur-3xl pointer-events-none"></div>
+
+  <div class="wrap">
+    {/* Magazine-style header */}
+    <div class="grid lg:grid-cols-[1fr_auto] gap-6 items-end mb-12">
+      <div data-reveal>
+        <div class="eyebrow mb-4">
+          <span class="w-8 h-px bg-coral"></span>
+          Layanan Medis
+        </div>
+        <h2 class="text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.02] tracking-tight text-balance max-w-2xl">
+          Poliklinik
+          <span class="block text-prima">Spesialis Terpadu</span>
+        </h2>
+      </div>
+      <div data-reveal data-reveal-delay="100" class="flex flex-col lg:items-end gap-3">
+        <p class="text-ink-soft/75 text-[15px] leading-relaxed max-w-sm lg:text-right">
+          {items.length} pilihan klinik spesialis dengan dokter berpengalaman di bidangnya masing-masing.
+        </p>
+        <a href="#dokter" class="hidden lg:inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-ink text-white text-sm font-bold hover:bg-prima-d transition-colors">
+          Lihat Semua Dokter
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    {/* Bento grid */}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:auto-rows-[320px]">
+      {/* === FEATURED (first) === */}
+      <button
+        type="button"
+        data-clinic-open={featured.id}
+        data-reveal
+        class="group relative overflow-hidden rounded-3xl bg-ink shadow-[0_30px_80px_-30px_rgba(15,31,58,0.4)] hover:shadow-[0_40px_100px_-30px_rgba(15,31,58,0.55)] transition-all duration-500 sm:col-span-2 sm:row-span-2 block text-left cursor-pointer"
+      >
+        <img
+          src={featuredImg}
+          alt={featured.nama}
+          loading="lazy"
+          class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1500ms]"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/65 to-ink/15"></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-ink/50 via-transparent to-transparent"></div>
+
+        {/* Top chips */}
+        <div class="absolute top-5 left-5 right-5 flex items-start justify-between gap-3 z-10">
+          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[10px] font-extrabold uppercase tracking-[0.2em]">
+            <span class="w-1.5 h-1.5 rounded-full bg-coral animate-pulse"></span>
+            Unggulan
+          </span>
+          {featured.lokasi && (
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[11px] font-semibold">
+              <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
+                <path d="M12 2C7.6 2 4 5.6 4 10c0 5.4 7 11.5 7.3 11.8.4.3.9.3 1.3 0C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z" />
+              </svg>
+              {featured.lokasi}
+            </span>
+          )}
+        </div>
+
+        {/* Number badge */}
+        <div class="absolute top-1/2 -translate-y-1/2 right-6 lg:right-8 z-10 hidden sm:block">
+          <div class="font-mono text-[120px] lg:text-[160px] font-extrabold leading-none text-white/10 group-hover:text-white/15 transition-colors">01</div>
+        </div>
+
+        {/* Bottom content */}
+        <div class="absolute inset-x-0 bottom-0 p-6 lg:p-8 text-white z-10">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="h-px w-8 bg-coral"></span>
+            <span class="text-[10px] uppercase tracking-[0.22em] font-bold text-coral">Klinik Utama</span>
+          </div>
+          <h3 class="font-extrabold text-[clamp(26px,3.5vw,40px)] leading-[1.05] tracking-tight text-balance max-w-md drop-shadow-lg">
+            {featured.nama}
+          </h3>
+          {featured.deskripsi && (
+            <p class="mt-3 text-white/85 text-[14px] lg:text-base leading-relaxed max-w-md line-clamp-2">
+              {stripTags(featured.deskripsi)}
+            </p>
+          )}
+          <div class="mt-6 flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-coral hover:bg-coral-d text-white font-bold text-sm shadow-lg shadow-coral/30 transition-all group-hover:-translate-y-0.5">
+              Lihat Dokter
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 group-hover:translate-x-1 transition-transform">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </span>
+            {featuredSched && (
+              <span class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold text-sm">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-teal">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v6l4 2" />
+                </svg>
+                {featuredSched.hari === todayName ? "Hari ini" : featuredSched.hari}
+                <span class="text-white/60">·</span>
+                <span class="font-mono">{featuredSched.jam}</span>
+              </span>
+            )}
+          </div>
+
+          {/* Doctor list */}
+          {featuredDocs.length > 0 && (
+            <div class="mt-6 pt-6 border-t border-white/15 grid sm:grid-cols-2 gap-2.5 max-w-xl">
+              {featuredDocs.slice(0, 4).map((d) => {
+                const code = specialistCode(d.nama);
+                const initial = shortName(d.nama).match(/^[A-Za-z]/)?.[0] ?? "?";
+                const docPhoto = gambarPertama(d.potourl);
+                return (
+                  <div class="flex items-center gap-2.5">
+                    <div class="relative w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 overflow-hidden backdrop-blur-md">
+                      {docPhoto ? (
+                        <img
+                          src={docPhoto}
+                          alt={shortName(d.nama)}
+                          loading="lazy"
+                          class="absolute inset-0 w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span class="text-[11px] font-extrabold text-white/80">{initial}</span>
+                      )}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[13px] font-bold text-white truncate">{shortName(d.nama)}</div>
+                      <div class="text-[10px] uppercase tracking-wider text-white/60">{code ?? d.spesialist}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Stat row */}
+          {featuredDocs.length > 0 && (
+            <div class="mt-5 flex flex-wrap items-center gap-4 text-white/80">
+              <div class="flex items-center gap-2">
+                <span class="font-extrabold text-white text-lg">{featuredDocs.length}</span>
+                <span class="text-xs">Dokter Spesialis</span>
+              </div>
+              {featuredCodes.length > 0 && (
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  {featuredCodes.slice(0, 3).map((c) => (
+                    <span class="px-2 py-0.5 rounded-md bg-white/10 border border-white/20 text-[10px] font-bold tracking-wide font-mono">{c}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </button>
+
+      {/* === SMALL CARDS (middle) === */}
+      {rest.map((p, idx) => {
+        const isLast = idx === lastIdx;
+        const useDb = !USE_STOCK_PHOTOS || p.nama.toLowerCase().includes("penyakit dalam");
+        const dbImg = useDb ? gambarPertama(p.poto) : "";
+        const src = dbImg || photoFor(p.nama);
+        const accent = ACCENTS[idx % ACCENTS.length];
+        const num = String(idx + 2).padStart(2, "0");
+        const desc = stripTags(p.deskripsi);
+        const docs = poliDoctors(p.id);
+        const sched = nextSchedule(p.id);
+        const codes = [...new Set(docs.map((d) => specialistCode(d.nama)).filter(Boolean))] as string[];
+        const topDoc = docs[0];
+
+        return (
+          <button
+            type="button"
+            data-clinic-open={p.id}
+            data-reveal
+            data-reveal-delay={(idx % 4) * 70}
+            class={`group relative overflow-hidden rounded-3xl bg-ink shadow-[0_18px_50px_-25px_rgba(15,31,58,0.3)] hover:shadow-[0_30px_70px_-25px_rgba(15,31,58,0.45)] transition-all duration-500 hover:-translate-y-1.5 block min-h-[300px] text-left cursor-pointer ${isLast ? "sm:col-span-2 lg:col-span-2" : ""}`}
+          >
+            {/* Full-bleed image */}
+            <img
+              src={src}
+              alt={p.nama}
+              loading="lazy"
+              class="absolute inset-0 w-full h-full object-cover transition-transform duration-[1200ms] group-hover:scale-110"
+            />
+            {/* Dark gradient overlay (top→bottom + left→right) */}
+            <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/20"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-ink/55 via-transparent to-transparent"></div>
+
+            {/* Top row: number badge + meta chips */}
+            <div class="absolute top-3 left-3 right-3 flex items-start justify-between gap-2 z-10">
+              <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-white/15 backdrop-blur-md border border-white/25 shadow-lg font-mono font-extrabold text-[12px] text-white">
+                {num}
+              </span>
+              <div class="flex flex-col items-end gap-1.5">
+                {p.lokasi && (
+                  <span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white/15 backdrop-blur-md border border-white/25 text-white text-[10px] font-bold">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-2.5 h-2.5 text-teal-300">
+                      <path d="M12 2C7.6 2 4 5.6 4 10c0 5.4 7 11.5 7.3 11.8.4.3.9.3 1.3 0C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z" />
+                    </svg>
+                    {p.lokasi}
+                  </span>
+                )}
+                {docs.length > 0 && (
+                  <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-coral/95 text-white text-[10px] font-bold shadow-sm">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                    {docs.length} Dokter
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom content overlay */}
+            <div class="absolute inset-x-0 bottom-0 p-4 lg:p-5 text-white z-10">
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="h-px w-5 bg-coral"></span>
+                <span class="text-[9px] uppercase tracking-[0.22em] font-bold text-coral-300">
+                  Klinik Spesialis
+                </span>
+              </div>
+              <h3 class={`font-extrabold leading-[1.1] tracking-tight text-white drop-shadow-lg ${isLast ? "text-[22px] lg:text-2xl" : "text-[16px]"}`}>
+                {p.nama}
+              </h3>
+              {desc && (
+                <p class="mt-1.5 text-white/80 text-[12px] leading-snug line-clamp-2 max-w-md">
+                  {desc}
+                </p>
+              )}
+
+              {/* Specialist codes + schedule row */}
+              <div class="mt-3 flex flex-wrap items-center gap-2">
+                {codes.slice(0, isLast ? 4 : 3).map((c) => (
+                  <span class="px-1.5 py-0.5 rounded-md bg-white/15 border border-white/20 text-white text-[9px] font-bold tracking-wide font-mono">
+                    {c}
+                  </span>
+                ))}
+                {codes.length > (isLast ? 4 : 3) && (
+                  <span class="px-1.5 py-0.5 rounded-md bg-white/10 text-white/80 text-[9px] font-bold">+{codes.length - (isLast ? 4 : 3)}</span>
+                )}
+              </div>
+
+              {/* Bottom row: schedule + arrow */}
+              <div class="mt-3 flex items-center justify-between gap-2">
+                {sched ? (
+                  <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-white min-w-0">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 text-teal-300 flex-shrink-0">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 6v6l4 2" />
+                    </svg>
+                    <span class="truncate">
+                      {sched.hari === todayName ? "Hari ini" : sched.hari}
+                      <span class="text-white/70 font-mono ml-1">{sched.jam.split("–")[0]}</span>
+                    </span>
+                  </span>
+                ) : (
+                  <span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-coral-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-coral"></span>
+                    Lihat Dokter
+                  </span>
+                )}
+                <span class="w-8 h-8 rounded-lg bg-coral group-hover:bg-coral-d text-white flex items-center justify-center group-hover:translate-x-0.5 transition-all flex-shrink-0 shadow-lg">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
+                    <path d="M5 12h14M13 6l6 6-6 6" />
+                  </svg>
+                </span>
+              </div>
+
+              {/* Wide card: top doctor preview */}
+              {isLast && topDoc && (
+                <div class="mt-3 flex items-center gap-2.5 p-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
+                  <div class="w-9 h-9 rounded-full bg-white/15 border border-white/20 flex items-center justify-center flex-shrink-0">
+                    <span class="text-[11px] font-extrabold text-white">
+                      {shortName(topDoc.nama).match(/^[A-Za-z]/)?.[0] ?? "?"}
+                    </span>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="text-[13px] font-bold text-white truncate">{shortName(topDoc.nama)}</div>
+                    <div class="text-[10px] uppercase tracking-wider text-white/70">{specialistCode(topDoc.nama) ?? topDoc.spesialist}</div>
+                  </div>
+                  {docs.length > 1 && (
+                    <span class="text-[10px] font-bold text-white/80 px-2 py-0.5 rounded-md bg-white/10 border border-white/15">
+                      +{docs.length - 1} lainnya
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+
+    {/* Mobile CTA */}
+    <div class="mt-8 text-center lg:hidden">
+      <a href="#dokter" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-ink text-white text-sm font-bold">
+        Lihat Semua Dokter
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+          <path d="M5 12h14M13 6l6 6-6 6" />
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  {/* === Hidden per-clinic templates (rendered server-side, swapped on click) === */}
+  <div class="hidden" aria-hidden="true">
+    {clinicData.map((c) => (
+      <template id={`clinic-content-${c.id}`}>
+        <div class="flex flex-col max-h-[90vh] lg:max-h-[85vh]">
+          {/* Image header */}
+          <div class="relative h-40 lg:h-52 bg-ink overflow-hidden flex-shrink-0">
+            <img src={c.img} alt="" class="absolute inset-0 w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/15"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-ink/55 via-transparent to-transparent"></div>
+            <div class="absolute bottom-0 left-0 right-0 p-5 lg:p-7 text-white">
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="h-px w-6 bg-coral"></span>
+                <span class="text-[10px] uppercase tracking-[0.22em] font-bold text-coral-300">Klinik Spesialis</span>
+              </div>
+              <h3 class="text-[22px] lg:text-[30px] font-extrabold leading-[1.1] tracking-tight drop-shadow-lg">{c.nama}</h3>
+              {c.deskripsi && (
+                <p class="text-white/80 text-[13px] lg:text-sm mt-2 max-w-xl line-clamp-2 leading-relaxed">{c.deskripsi}</p>
+              )}
+              <div class="mt-3 flex flex-wrap gap-2 text-[11px]">
+                {c.lokasi && (
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/15 backdrop-blur-md border border-white/25 text-white font-semibold">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3 text-teal-300">
+                      <path d="M12 2C7.6 2 4 5.6 4 10c0 5.4 7 11.5 7.3 11.8.4.3.9.3 1.3 0C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z" />
+                    </svg>
+                    {c.lokasi}
+                  </span>
+                )}
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-coral/95 text-white font-bold shadow-sm">
+                  <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                  {c.doctors.length} Dokter
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Doctor list */}
+          <div class="p-5 lg:p-6 overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="font-extrabold text-base lg:text-lg flex items-center gap-2">
+                Daftar Dokter
+              </h4>
+              <span class="text-[11px] uppercase tracking-wider font-bold text-ink-soft/70">
+                Klik kartu untuk detail
+              </span>
+            </div>
+            {c.doctors.length === 0 ? (
+              <div class="text-center py-10">
+                <div class="w-14 h-14 mx-auto rounded-2xl bg-canvas flex items-center justify-center text-ink-soft/50">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-7 h-7">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                  </svg>
+                </div>
+                <p class="mt-3 text-sm text-ink-soft font-semibold">Belum ada dokter terdaftar</p>
+                <p class="mt-1 text-xs text-ink-soft/60">Hubungi RS untuk informasi terbaru</p>
+              </div>
+            ) : (
+              <div class="space-y-3">
+                {c.doctors.map((d, i) => {
+                  const accent = ACCENTS[i % ACCENTS.length];
+                  const todaySched = d.schedules.find((s) => s.hari === todayName);
+                  return (
+                    <div class={`flex items-start gap-4 p-4 rounded-2xl bg-canvas border border-line/60 hover:border-line hover:bg-white transition-all`}>
+                      <div class={`relative w-14 h-14 rounded-2xl ${d.photo ? "" : `${accent.soft} ${accent.text}`} flex items-center justify-center font-extrabold text-lg flex-shrink-0 overflow-hidden`}>
+                        {d.photo ? (
+                          <img
+                            src={d.photo}
+                            alt={d.shortNama}
+                            loading="lazy"
+                            class="absolute inset-0 w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span>{d.initial}</span>
+                        )}
+                        {todaySched && (
+                          <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-teal border-2 border-canvas"></span>
+                          </span>
+                        )}
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                          <span class="font-extrabold text-ink text-[15px]">{d.shortNama}</span>
+                          {d.code && (
+                            <span class={`px-1.5 py-0.5 rounded-md ${accent.soft} ${accent.text} text-[10px] font-bold tracking-wide font-mono`}>{d.code}</span>
+                          )}
+                          {todaySched && (
+                            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-teal/10 text-teal text-[10px] font-bold uppercase tracking-wide">
+                              <span class="w-1 h-1 rounded-full bg-teal animate-pulse"></span>
+                              Praktik Hari Ini
+                            </span>
+                          )}
+                        </div>
+                        {d.spesialist && !d.code && (
+                          <div class="text-xs text-ink-soft mt-0.5">{d.spesialist}</div>
+                        )}
+                        <div class="mt-2.5 flex flex-wrap gap-1.5">
+                          {d.schedules.length === 0 ? (
+                            <span class="text-xs text-ink-soft/60 italic">Jadwal belum tersedia</span>
+                          ) : (
+                            d.schedules.map((s) => (
+                              <span class={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md border text-[11px] font-semibold ${s.hari === todayName ? "bg-teal/10 border-teal/30 text-teal" : "bg-white border-line text-ink-soft"}`}>
+                                <span class={s.hari === todayName ? "" : "text-ink-soft/70"}>{s.hari.slice(0, 3)}</span>
+                                <span class="font-mono">{s.jam}</span>
+                              </span>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Footer CTA */}
+            <div class="mt-5 pt-5 border-t border-line flex flex-col sm:flex-row gap-3 items-center justify-between">
+              <p class="text-xs text-ink-soft/70 text-center sm:text-left">
+                Butuh bantuan? Hubungi resepsionis untuk membuat janji.
+              </p>
+              <a href="#kontak" class="modal-close-cta inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-coral to-coral-d text-white text-sm font-bold shadow-lg shadow-coral/30 hover:-translate-y-0.5 transition-all whitespace-nowrap">
+                Buat Janji
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </template>
+    ))}
+  </div>
+
+  {/* === Modal shell === */}
+  <div id="clinic-modal" class="hidden fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-labelledby="clinic-modal-title">
+    <div class="absolute inset-0 bg-ink/80 backdrop-blur-sm clinic-modal-backdrop"></div>
+    <div class="relative h-full w-full flex items-center justify-center p-3 sm:p-4">
+      <div class="clinic-modal-dialog relative w-full max-w-3xl max-h-[94vh] bg-white rounded-3xl overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.6)] flex flex-col">
+        <button
+          type="button"
+          class="clinic-modal-close absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white flex items-center justify-center hover:bg-white/30 hover:scale-105 transition-all shadow-lg"
+          aria-label="Tutup"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+        <div class="clinic-modal-content"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const modal = document.getElementById('clinic-modal');
+  const modalContent = modal?.querySelector('.clinic-modal-content');
+  let lastFocused: HTMLElement | null = null;
+
+  function openClinicModal(id: string) {
+    if (!modal || !modalContent) return;
+    const tpl = document.getElementById(`clinic-content-${id}`);
+    if (!tpl || !('content' in tpl)) return;
+    modalContent.innerHTML = '';
+    modalContent.appendChild((tpl as HTMLTemplateElement).content.cloneNode(true));
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    lastFocused = document.activeElement as HTMLElement;
+    modal.querySelector<HTMLElement>('.clinic-modal-close')?.focus();
+  }
+
+  function closeClinicModal() {
+    if (!modal) return;
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+    modalContent && (modalContent.innerHTML = '');
+    lastFocused?.focus();
+  }
+
+  document.querySelectorAll('[data-clinic-open]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = el.getAttribute('data-clinic-open');
+      if (id) openClinicModal(id);
+    });
+  });
+
+  modal?.querySelector('.clinic-modal-close')?.addEventListener('click', closeClinicModal);
+  modal?.querySelector('.clinic-modal-backdrop')?.addEventListener('click', closeClinicModal);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+      closeClinicModal();
+    }
+  });
+
+  // Delegate clicks for "Buat Janji" CTA inside modal (since content is cloned dynamically)
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('.modal-close-cta')) {
+      closeClinicModal();
+    }
+  });
+</script>

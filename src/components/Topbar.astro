@@ -1,0 +1,42 @@
+---
+import type { InfoCard } from "../lib/types";
+
+export interface Props {
+  info: InfoCard | null;
+}
+
+const { info } = Astro.props;
+if (!info) return null;
+
+const phone = info.hp ?? info.emergency_phone ?? "";
+const emergencyPhone = info.emergency_phone ?? phone;
+---
+
+<div class="hidden md:block bg-ink text-white/90 text-[12px]">
+  <div class="wrap flex justify-between items-center py-2">
+    <div class="flex items-center gap-6">
+      {info.location_address && (
+        <span class="flex items-center gap-2">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-prima-l">
+            <path d="M12 2C7.6 2 4 5.6 4 10c0 5.4 7 11.5 7.3 11.8.4.3.9.3 1.3 0C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z" />
+          </svg>
+          <span class="truncate max-w-md">{info.location_address}</span>
+        </span>
+      )}
+    </div>
+    <div class="flex items-center gap-6">
+      {emergencyPhone && (
+        <a href={`tel:${emergencyPhone}`} class="flex items-center gap-2 hover:text-coral">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-coral">
+            <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z" />
+          </svg>
+          <span class="font-semibold text-white">{emergencyPhone}</span>
+        </a>
+      )}
+      <span class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-teal animate-pulse"></span>
+        <span>IGD 24 Jam</span>
+      </span>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,49 @@
+---
+import type { Fasilitas } from "../../lib/types";
+import { gambarPertama } from "../../lib/utils";
+import SectionHeading from "../SectionHeading.astro";
+
+export interface Props {
+  items: Fasilitas[];
+}
+
+const { items } = Astro.props;
+if (items.length === 0) return null;
+---
+
+<section id="fasilitas" class="section bg-sage-tint">
+  <div class="wrap">
+    <SectionHeading
+      eyebrow="Sarana & Prasarana"
+      title="Fasilitas Rumah Sakit"
+      desc="Fasilitas modern yang mendukung pelayanan kesehatan terbaik bagi pasien dan keluarga."
+      center
+    />
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {items.map((f, i) => {
+        const img = gambarPertama(f.gambar);
+        return (
+          <article data-reveal data-reveal-delay={(i % 3) * 100} class="card card-hover overflow-hidden h-full flex flex-col group">
+            {img && (
+              <div class="aspect-[16/10] overflow-hidden bg-canvas">
+                <img
+                  src={img}
+                  alt={f.nama_fasilitas}
+                  class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  loading="lazy"
+                />
+              </div>
+            )}
+            <div class="p-6 flex-1 flex flex-col">
+              <h3 class="font-bold text-lg mb-2">{f.nama_fasilitas}</h3>
+              {f.deskripsi && (
+                <div class="text-sm text-muted leading-relaxed strip-html line-clamp-[10]" set:html={f.deskripsi} />
+              )}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </div>
+</section>

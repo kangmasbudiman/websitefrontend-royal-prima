@@ -1,0 +1,90 @@
+---
+import "../styles/global.css";
+import "@fontsource/plus-jakarta-sans/400.css";
+import "@fontsource/plus-jakarta-sans/500.css";
+import "@fontsource/plus-jakarta-sans/600.css";
+import "@fontsource/plus-jakarta-sans/700.css";
+import "@fontsource/plus-jakarta-sans/800.css";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource-variable/fraunces";
+
+import Topbar from "../components/Topbar.astro";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+import Fab from "../components/Fab.astro";
+import type { InfoCard } from "../lib/types";
+
+export interface Props {
+  title?: string;
+  description?: string;
+  info?: InfoCard | null;
+}
+
+const {
+  title = "RS Royal Prima Jambi — Rumah Sakit Swasta Terpadu",
+  description = "Rumah Sakit Royal Prima Jambi: layanan kesehatan terpadu dengan dokter spesialis, poliklinik lengkap, IGD 24 jam, dan fasilitas modern di Jambi.",
+  info = null,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <meta property="og:title" content="RS Royal Prima Jambi" />
+    <meta property="og:description" content="Layanan kesehatan terpadu dengan dokter spesialis, poliklinik lengkap, dan IGD 24 jam." />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <Topbar info={info} />
+    <Nav emergencyPhone={info?.emergency_phone} />
+    <main>
+      <slot />
+    </main>
+    <Footer info={info} />
+    <Fab />
+
+    <script>
+      // Global IntersectionObserver — adds `.in` to any [data-reveal] element
+      const setup = () => {
+        const els = document.querySelectorAll<HTMLElement>("[data-reveal]");
+        if (!els.length) return;
+        if (typeof IntersectionObserver === "undefined") {
+          els.forEach((el) => el.classList.add("in"));
+          return;
+        }
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                const el = entry.target as HTMLElement;
+                const delay = el.dataset.revealDelay;
+                if (delay) el.style.transitionDelay = `${delay}ms`;
+                el.classList.add("in");
+                io.unobserve(el);
+              }
+            });
+          },
+          { threshold: 0.12 }
+        );
+        els.forEach((el) => io.observe(el));
+      };
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", setup);
+      } else {
+        setup();
+      }
+      document.addEventListener("astro:page-load", setup);
+    </script>
+  </body>
+</html>

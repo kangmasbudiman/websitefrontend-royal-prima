@@ -1,0 +1,45 @@
+---
+// Floating WhatsApp button — appears after 400px scroll.
+// Initially hidden via CSS class; vanilla JS toggles on scroll.
+---
+
+<a
+  data-fab
+  href="https://wa.me/6288100000000"
+  target="_blank"
+  rel="noreferrer"
+  aria-label="WhatsApp"
+  class="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full text-white flex items-center justify-center shadow-lg hover:scale-110 transition opacity-0 pointer-events-none translate-y-4"
+  style="background:#25D366"
+>
+  <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+    <path d="M12 2a10 10 0 00-8.6 15L2 22l5.2-1.4A10 10 0 1012 2zm0 2a8 8 0 11-4.2 14.8l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 0112 4zm-3.4 4.3c-.2 0-.5 0-.7.3-.2.3-.9.9-.9 2.1s.9 2.4 1 2.6c.2.2 1.8 2.9 4.5 3.9 2.2.9 2.7.7 3.2.6.5 0 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2l-.7-.4c-.3-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1-.7-.3-1.4-.6-2.1-1.5-.5-.6-.9-1.3-1-1.5-.1-.2 0-.4.1-.5l.4-.5c.1-.1.1-.3.2-.4 0-.2 0-.3 0-.4l-.8-2c-.2-.5-.4-.4-.6-.4z" />
+  </svg>
+</a>
+
+<script>
+  const setup = () => {
+    const fab = document.querySelector<HTMLElement>("[data-fab]");
+    if (!fab) return;
+    let visible = false;
+    const update = () => {
+      const should = window.scrollY > 400;
+      if (should === visible) return;
+      visible = should;
+      if (should) {
+        fab.classList.remove("opacity-0", "pointer-events-none", "translate-y-4");
+      } else {
+        fab.classList.add("opacity-0", "pointer-events-none", "translate-y-4");
+      }
+    };
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setup);
+  } else {
+    setup();
+  }
+  document.addEventListener("astro:page-load", setup);
+</script>

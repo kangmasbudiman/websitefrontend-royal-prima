@@ -1,0 +1,87 @@
+---
+import type { Artikel } from "../../lib/types";
+import { formatTanggal, gambarPertama } from "../../lib/utils";
+import SectionHeading from "../SectionHeading.astro";
+
+export interface Props {
+  artikel: Artikel[];
+  berita: Artikel[];
+}
+
+const { artikel, berita } = Astro.props;
+
+const combined = [...berita, ...artikel]
+  .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))
+  .slice(0, 6);
+
+if (combined.length === 0) return null;
+
+const [featured, ...rest] = combined;
+---
+
+<section id="berita" class="section bg-canvas">
+  <div class="wrap">
+    <SectionHeading
+      eyebrow="Informasi"
+      title="Berita & Artikel Kesehatan"
+      desc="Update terbaru dari RS Royal Prima Jambi dan tips kesehatan dari tim dokter kami."
+    />
+
+    <div class="grid lg:grid-cols-2 gap-6">
+      {featured && (
+        <a
+          data-reveal
+          href="/#berita"
+          class="lg:row-span-2 card card-hover overflow-hidden block h-full group"
+        >
+          <div class="aspect-[16/10] overflow-hidden bg-canvas">
+            {gambarPertama(featured.gambar) && (
+              <img
+                src={gambarPertama(featured.gambar)}
+                alt={featured.judul}
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+              />
+            )}
+          </div>
+          <div class="p-6">
+            {featured.kategoriberita?.namaKategori && (
+              <span class="chip mb-3">{featured.kategoriberita.namaKategori}</span>
+            )}
+            <h3 class="font-extrabold text-2xl mb-2 leading-tight">{featured.judul}</h3>
+            <div class="text-sm text-muted line-clamp-3 strip-html" set:html={featured.isi ?? ""} />
+            <div class="mt-4 flex items-center justify-between text-xs text-muted">
+              <span>{featured.penulis ?? "Admin"}</span>
+              <time>{formatTanggal(featured.created_at)}</time>
+            </div>
+          </div>
+        </a>
+      )}
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-1 gap-4">
+        {rest.slice(0, 4).map((a, i) => (
+          <a
+            data-reveal
+            data-reveal-delay={i * 80}
+            href="/#berita"
+            class="card card-hover overflow-hidden block group flex sm:flex-row gap-0"
+          >
+            <div class="sm:w-32 aspect-[4/3] sm:aspect-auto overflow-hidden bg-canvas flex-shrink-0">
+              {gambarPertama(a.gambar) && (
+                <img src={gambarPertama(a.gambar)} alt={a.judul} class="w-full h-full object-cover" />
+              )}
+            </div>
+            <div class="p-4 flex-1">
+              {a.kategoriberita?.namaKategori && (
+                <span class="text-[10px] font-bold tracking-wider uppercase text-prima">
+                  {a.kategoriberita.namaKategori}
+                </span>
+              )}
+              <h4 class="font-bold text-[15px] leading-tight line-clamp-2 mt-1">{a.judul}</h4>
+              <div class="mt-2 text-xs text-muted">{formatTanggal(a.created_at)}</div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

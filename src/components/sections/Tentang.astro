@@ -1,0 +1,245 @@
+---
+import type { Tentangkami } from "../../lib/types";
+import { gambarPertama } from "../../lib/utils";
+
+export interface Props {
+  items: Tentangkami[];
+}
+
+const { items } = Astro.props;
+const aktif = items.filter((t) => t.status !== false).slice(0, 3);
+if (aktif.length === 0) return null;
+
+const [featured, ...rest] = aktif;
+const featuredImg = gambarPertama(featured.gambar);
+
+// Helper: strip HTML to plain text and truncate
+const stripHtml = (html: string | null, max = 220) => {
+  if (!html) return "";
+  const txt = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  return txt.length > max ? txt.slice(0, max).trimEnd() + "…" : txt;
+};
+
+const youtubeId = (url: string | null) => {
+  if (!url) return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([\w-]{11})/);
+  return m ? m[1] : null;
+};
+const yt = youtubeId(featured.linkyoutube);
+---
+
+<section id="tentang" class="section relative overflow-hidden">
+  {/* Decorative background */}
+  <div class="absolute inset-0 -z-10 bg-gradient-to-b from-prima-tint via-paper to-canvas"></div>
+  <div class="absolute top-20 -right-32 w-96 h-96 rounded-full bg-prima-soft/60 blur-3xl pointer-events-none"></div>
+  <div class="absolute bottom-10 -left-32 w-96 h-96 rounded-full bg-teal/5 blur-3xl pointer-events-none"></div>
+
+  <div class="wrap">
+    {/* Section header — magazine style */}
+    <div class="grid lg:grid-cols-[1fr_auto] gap-6 items-end mb-12">
+      <div data-reveal>
+        <div class="eyebrow mb-4">
+          <span class="w-8 h-px bg-coral"></span>
+          Tentang Kami
+        </div>
+        <h2 class="text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.02] tracking-tight text-balance max-w-2xl">
+          Mengenal lebih dekat
+          <span class="block text-prima">RS Royal Prima Jambi</span>
+        </h2>
+      </div>
+      <p data-reveal data-reveal-delay="100" class="text-ink-soft/75 text-[15px] leading-relaxed max-w-sm lg:text-right">
+        Rumah sakit terpadu yang berkomitmen memberikan layanan kesehatan berkualitas, profesional, dan terjangkau bagi masyarakat Jambi.
+      </p>
+    </div>
+
+    {/* Featured + sidebar grid */}
+    <div class="grid lg:grid-cols-12 gap-6">
+      {/* === FEATURED CARD === */}
+      <article
+        data-reveal
+        class="lg:col-span-7 group relative overflow-hidden rounded-[28px] bg-ink shadow-[0_30px_80px_-30px_rgba(15,31,58,0.4)] hover:shadow-[0_40px_100px_-30px_rgba(15,31,58,0.5)] transition-all duration-500 min-h-[520px] lg:min-h-[640px] flex flex-col"
+      >
+        {/* Background image with overlay */}
+        {featuredImg && (
+          <div class="absolute inset-0">
+            <img
+              src={featuredImg}
+              alt={featured.judul}
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[1500ms]"
+              loading="lazy"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/20"></div>
+            <div class="absolute inset-0 bg-gradient-to-r from-ink/60 via-transparent to-transparent"></div>
+          </div>
+        )}
+
+        {/* Top chips */}
+        <div class="relative z-10 p-6 lg:p-8 flex items-start justify-between gap-4">
+          <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-[10px] font-extrabold uppercase tracking-[0.2em]">
+            <span class="w-1.5 h-1.5 rounded-full bg-coral"></span>
+            Featured
+          </span>
+          {yt && (
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-coral/95 text-white text-[10px] font-extrabold uppercase tracking-[0.18em] shadow-lg">
+              <svg viewBox="0 0 24 24" fill="currentColor" class="w-3 h-3">
+                <path d="M23 12s0-3.5-.4-5.2c-.2-.9-.9-1.6-1.8-1.8C19 4.6 12 4.6 12 4.6s-7 0-8.8.4c-.9.2-1.6.9-1.8 1.8C1 8.5 1 12 1 12s0 3.5.4 5.2c.2.9.9 1.6 1.8 1.8 1.8.4 8.8.4 8.8.4s7 0 8.8-.4c.9-.2 1.6-.9 1.8-1.8.4-1.7.4-5.2.4-5.2zM9.8 15.3V8.7l5.7 3.3-5.7 3.3z" />
+              </svg>
+              Video Available
+            </span>
+          )}
+        </div>
+
+        {/* Bottom content */}
+        <div class="relative z-10 mt-auto p-6 lg:p-10">
+          <h3 class="text-white font-extrabold text-[clamp(28px,3.5vw,44px)] leading-[1.05] tracking-tight text-balance max-w-xl drop-shadow-lg">
+            {featured.judul}
+          </h3>
+          <p class="mt-4 text-white/85 text-[15px] lg:text-base leading-relaxed max-w-lg">
+            {stripHtml(featured.isi, 240)}
+          </p>
+
+          <div class="mt-7 flex flex-wrap items-center gap-3">
+            {yt ? (
+              <a
+                href={featured.linkyoutube ?? "#"}
+                target="_blank"
+                rel="noreferrer"
+                class="group/btn inline-flex items-center gap-3 pl-3 pr-5 py-3 rounded-full bg-coral hover:bg-coral-d text-white font-bold shadow-xl shadow-coral/30 hover:-translate-y-0.5 transition-all"
+              >
+                <span class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center group-hover/btn:scale-110 transition-transform">
+                  <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 ml-0.5">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </span>
+                <span class="flex flex-col leading-none">
+                  <span class="text-[10px] uppercase tracking-[0.16em] text-white/80 font-bold">Tonton</span>
+                  <span class="text-sm">Video Profil</span>
+                </span>
+              </a>
+            ) : (
+              <span class="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/10 border border-white/20 text-white/80 text-sm font-semibold backdrop-blur-md">
+                Selengkapnya di bawah
+              </span>
+            )}
+
+            <a
+              href="/#poliklinik"
+              class="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 hover:border-white/40 text-white font-semibold text-sm backdrop-blur-md transition-all hover:-translate-y-0.5"
+            >
+              Layanan Kami
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </article>
+
+      {/* === SIDEBAR CARDS === */}
+      <div class="lg:col-span-5 flex flex-col gap-6">
+        {rest.map((t, i) => {
+          const img = gambarPertama(t.gambar);
+          return (
+            <article
+              data-reveal
+              data-reveal-delay={150 + i * 100}
+              class="group relative overflow-hidden rounded-3xl bg-white border border-line shadow-[0_18px_50px_-25px_rgba(15,31,58,0.2)] hover:shadow-[0_28px_70px_-30px_rgba(15,31,58,0.3)] transition-all duration-500 hover:-translate-y-1 flex-1 min-h-[240px] lg:min-h-[308px] grid grid-cols-[40%_1fr]"
+            >
+              {/* Image side */}
+              <div class="relative overflow-hidden bg-canvas">
+                {img ? (
+                  <img
+                    src={img}
+                    alt={t.judul}
+                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div class="absolute inset-0 bg-gradient-to-br from-prima-soft to-coral-soft flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-12 h-12 text-prima/40">
+                      <path d="M4 16l4.58-4.58a2 2 0 012.83 0L16 16m-2-2l1.42-1.42a2 2 0 012.83 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                )}
+                <div class="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-white/90 to-transparent pointer-events-none"></div>
+              </div>
+
+              {/* Content side */}
+              <div class="p-5 lg:p-6 flex flex-col">
+                <div class="eyebrow text-coral mb-2 text-[10px]">
+                  Artikel {String(i + 2).padStart(2, "0")}
+                </div>
+                <h3 class="font-extrabold text-[16px] lg:text-[18px] leading-tight tracking-tight mb-2 line-clamp-2">
+                  {t.judul}
+                </h3>
+                <p class="text-[13px] text-ink-soft/75 leading-relaxed line-clamp-3 flex-1">
+                  {stripHtml(t.isi, 110)}
+                </p>
+
+                <div class="mt-4 flex items-center gap-3">
+                  {t.linkyoutube ? (
+                    <a
+                      href={t.linkyoutube}
+                      target="_blank"
+                      rel="noreferrer"
+                      class="inline-flex items-center gap-1.5 text-[13px] font-bold text-coral hover:gap-2.5 transition-all"
+                    >
+                      <span class="w-6 h-6 rounded-full bg-coral-soft flex items-center justify-center">
+                        <svg viewBox="0 0 24 24" fill="currentColor" class="w-2.5 h-2.5 ml-0.5">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </span>
+                      Video
+                    </a>
+                  ) : (
+                    <span class="inline-flex items-center gap-1.5 text-[13px] font-bold text-prima">
+                      <span class="w-1.5 h-1.5 rounded-full bg-prima"></span>
+                      Profil
+                    </span>
+                  )}
+                  <span class="flex-1 h-px bg-line"></span>
+                  <a href={`/#poliklinik`} class="text-ink-soft/60 hover:text-coral transition-colors" aria-label={`Baca ${t.judul}`}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 group-hover:translate-x-1 transition-transform">
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+
+        {/* Stats card at bottom */}
+        <div
+          data-reveal
+          data-reveal-delay={150 + rest.length * 100}
+          class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-prima-d via-prima to-prima-l p-6 lg:p-7 text-white shadow-[0_20px_60px_-25px_rgba(7,79,135,0.5)]"
+        >
+          <div class="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+          <div class="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-coral/20 blur-2xl pointer-events-none"></div>
+
+          <div class="relative">
+            <div class="eyebrow text-white/70 mb-3 text-[10px]">Komitmen Kami</div>
+            <p class="text-white font-extrabold text-lg leading-snug mb-4">
+              "Memberikan layanan kesehatan terbaik dengan sepenuh hati"
+            </p>
+            <div class="grid grid-cols-3 gap-3 pt-4 border-t border-white/20">
+              <div>
+                <div class="font-extrabold text-2xl leading-none">15+</div>
+                <div class="text-[10px] uppercase tracking-wider text-white/70 font-semibold mt-1">Tahun</div>
+              </div>
+              <div>
+                <div class="font-extrabold text-2xl leading-none">30+</div>
+                <div class="text-[10px] uppercase tracking-wider text-white/70 font-semibold mt-1">Spesialis</div>
+              </div>
+              <div>
+                <div class="font-extrabold text-2xl leading-none">24/7</div>
+                <div class="text-[10px] uppercase tracking-wider text-white/70 font-semibold mt-1">IGD</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
