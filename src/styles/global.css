@@ -68,6 +68,7 @@
   .section {
     padding-block: clamp(72px, 10vw, 140px);
     position: relative;
+    scroll-margin-top: 90px;
   }
   .section-tight { padding-block: clamp(40px, 5vw, 64px); }
 
@@ -193,6 +194,16 @@
 }
 
 @layer utilities {
+  .stretched-link::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    cursor: inherit;
+  }
+  .stretched-link-z > * {
+    position: relative;
+    z-index: 1;
+  }
   .text-balance { text-wrap: balance; }
   .text-pretty { text-wrap: pretty; }
   .text-shadow-sm { text-shadow: 0 1px 4px rgba(0, 0, 0, .45); }

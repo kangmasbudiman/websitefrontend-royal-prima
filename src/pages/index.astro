@@ -62,7 +62,7 @@ const dokter = (dokterRes.data as unknown as Dokter[]) ?? [];
 const poliklinik = (poliRes.data as unknown as Poliklinik[]) ?? [];
 ---
 
-<SiteLayout>
+<SiteLayout info={info}>
   <HeroSlider client:load items={(sliderRes.data as unknown as Slider[]) ?? []} info={info} />
   <InfoCards info={info} />
   <Tentang items={(tentangRes.data as unknown as Tentangkami[]) ?? []} />

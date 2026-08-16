@@ -1,5 +1,6 @@
 ---
 import type { InfoCard } from "../../lib/types";
+import { mapsNavUrl, safeUrl } from "../../lib/utils";
 
 export interface Props {
   info: InfoCard | null;
@@ -40,7 +41,7 @@ if (info) {
       desc: info.timetable_desc ?? "Jadwal praktik dokter spesialis",
       ctaLabel: "Cek Jadwal",
       ctaSub: "Lihat semua dokter",
-      href: info.timetable_url ?? "/#dokter",
+      href: safeUrl(info.timetable_url, "/#dokter"),
       accent: "prima",
     });
   }
@@ -51,7 +52,7 @@ if (info) {
       desc: info.location_address ?? "",
       ctaLabel: "Buka Maps",
       ctaSub: "Rute lokasi",
-      href: info.location_map_url ?? "#",
+      href: mapsNavUrl(info.location_map_url, info.location_address),
       accent: "teal",
     });
   }
@@ -125,7 +126,7 @@ if (cards.length === 0) return null;
               {isEmergency && c.big ? (
                 <a
                   href={c.href}
-                  class="mt-2 block font-mono font-extrabold text-[clamp(26px,3.5vw,34px)] tracking-tight text-ink hover:text-coral transition-colors leading-none"
+                  class="mt-2 block font-mono font-extrabold text-[clamp(26px,3.5vw,34px)] tracking-tight text-ink hover:text-coral transition-colors leading-none relative z-10"
                 >
                   {c.big}
                 </a>
@@ -140,7 +141,7 @@ if (cards.length === 0) return null;
                 href={c.href}
                 target={c.href.startsWith("http") ? "_blank" : undefined}
                 rel="noreferrer"
-                class={`mt-6 group/cta inline-flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-gradient-to-r ${gradient} text-white font-bold text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all`}
+                class={`stretched-link mt-6 group/cta inline-flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-gradient-to-r ${gradient} text-white font-bold text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all`}
               >
                 <span class="flex items-center gap-2.5">
                   <span class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">

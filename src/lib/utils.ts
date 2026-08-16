@@ -40,3 +40,40 @@ export function sortByHari<T extends { hari: string }>(items: T[]): T[] {
 export function rawHtml(html: string | null | undefined): string {
   return html ?? "";
 }
+
+// Validate a URL/string from the database. Returns the value if it looks like a
+// real link (http(s), mailto:, tel:, or absolute path / anchor), else fallback.
+export function safeUrl(value: string | null | undefined, fallback = "#"): string {
+  if (!value) return fallback;
+  const v = value.trim();
+  if (!v) return fallback;
+  if (/^(https?:|mailto:|tel:)/i.test(v)) return v;
+  if (v.startsWith("/") || v.startsWith("#")) return v;
+  return fallback;
+}
+
+// Convert a Google Maps embed URL (the kind used in <iframe src>) into a
+// clickable navigation URL. Embed URLs go to the embed API and don't render
+// when opened directly, so we extract coords or fall back to an address search.
+export function mapsNavUrl(
+  embedOrUrl: string | null | undefined,
+  fallbackAddress?: string | null
+): string {
+  if (!embedOrUrl) {
+    return fallbackAddress
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fallbackAddress)}`
+      : "#";
+  }
+  if (!embedOrUrl.includes("/embed") && !embedOrUrl.includes("pb=")) {
+    return embedOrUrl;
+  }
+  const m = embedOrUrl.match(/!2d(-?\d+(?:\.\d+)?)!3d(-?\d+(?:\.\d+)?)/);
+  if (m) {
+    const [, lng, lat] = m;
+    return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+  }
+  if (fallbackAddress) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fallbackAddress)}`;
+  }
+  return "https://www.google.com/maps";
+}

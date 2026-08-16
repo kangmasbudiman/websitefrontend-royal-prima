@@ -12,31 +12,42 @@ const phone = info.hp ?? info.emergency_phone ?? "";
 const emergencyPhone = info.emergency_phone ?? phone;
 ---
 
-<div class="hidden md:block bg-ink text-white/90 text-[12px]">
-  <div class="wrap flex justify-between items-center py-2">
-    <div class="flex items-center gap-6">
+<div data-topbar class="bg-gradient-to-r from-coral-d via-coral to-coral-d text-white relative overflow-hidden">
+  {/* subtle decorative glow */}
+  <div class="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+  <div class="absolute -bottom-10 left-1/3 w-32 h-32 rounded-full bg-amber-300/15 blur-2xl pointer-events-none"></div>
+
+  <div class="wrap relative">
+    <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-2 text-[12.5px]">
+      {/* Left cluster: IGD badge + phone */}
+      <div class="flex items-center gap-4 min-w-0">
+        <span class="inline-flex items-center gap-2 font-bold tracking-wide">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75"></span>
+            <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-white"></span>
+          </span>
+          <span class="uppercase tracking-[.18em]">IGD 24 Jam</span>
+        </span>
+
+        {emergencyPhone && (
+          <a href={`tel:${emergencyPhone}`} class="flex items-center gap-2 hover:text-amber-100 transition-colors">
+            <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
+              <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z" />
+            </svg>
+            <span class="font-semibold">{emergencyPhone}</span>
+          </a>
+        )}
+      </div>
+
+      {/* Right: address */}
       {info.location_address && (
-        <span class="flex items-center gap-2">
-          <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-prima-l">
+        <span class="hidden sm:flex items-center gap-2 min-w-0 text-white/90">
+          <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 flex-shrink-0">
             <path d="M12 2C7.6 2 4 5.6 4 10c0 5.4 7 11.5 7.3 11.8.4.3.9.3 1.3 0C13 21.5 20 15.4 20 10c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z" />
           </svg>
-          <span class="truncate max-w-md">{info.location_address}</span>
+          <span class="truncate max-w-[420px]">{info.location_address}</span>
         </span>
       )}
-    </div>
-    <div class="flex items-center gap-6">
-      {emergencyPhone && (
-        <a href={`tel:${emergencyPhone}`} class="flex items-center gap-2 hover:text-coral">
-          <svg viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5 text-coral">
-            <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z" />
-          </svg>
-          <span class="font-semibold text-white">{emergencyPhone}</span>
-        </a>
-      )}
-      <span class="flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-teal animate-pulse"></span>
-        <span>IGD 24 Jam</span>
-      </span>
     </div>
   </div>
 </div>
