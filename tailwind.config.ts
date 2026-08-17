@@ -34,6 +34,7 @@ const config: Config = {
         body: ['Inter', "system-ui", "sans-serif"],
         display: ['"Plus Jakarta Sans"', "system-ui", "sans-serif"],
         serif: ['"Fraunces Variable"', "Georgia", "serif"],
+        script: ['"Great Vibes"', "Georgia", "cursive"],
       },
       boxShadow: {
         sm: "var(--sh-sm)",

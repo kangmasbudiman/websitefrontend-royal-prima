@@ -1,11 +1,40 @@
 ---
 // Brand logo + name. Pure presentational.
+export interface Props {
+  light?: boolean;
+}
+
+const { light = false } = Astro.props;
 ---
 
 <a href="/" class="flex items-center gap-3 group">
-  <img src="/logo-rs.png" alt="Logo RS Royal Prima Jambi" width="44" height="44" class="w-11 h-11 object-contain drop-shadow-sm group-hover:scale-105 transition-transform" />
-  <div class="leading-tight">
-    <span class="block font-extrabold tracking-tight text-[15px]">RS ROYAL PRIMA</span>
-    <small class="block text-[10px] font-semibold tracking-[.22em] uppercase text-muted">J a m b i</small>
+  <img
+    src="/logo-rs.png"
+    alt="Logo RS Royal Prima Jambi"
+    width="46"
+    height="46"
+    class="w-[46px] h-[46px] object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
+  />
+  <div class="leading-none">
+    <span
+      class:list={[
+        "block font-serif font-extrabold tracking-wide whitespace-nowrap text-[13.5px] sm:text-[16px]",
+        light ? "text-white" : "text-prima-d",
+      ]}
+    >
+      R.S. ROYAL PRIMA JAMBI
+    </span>
+    <span class:list={["mt-1.5 flex items-center gap-2 whitespace-nowrap", light ? "text-white/70" : ""]}>
+      <span class="w-1 h-1 rotate-45 bg-[#c9a227] flex-shrink-0"></span>
+      <span
+        class:list={[
+          "font-script leading-none text-[13px] sm:text-[15px]",
+          light ? "text-[#d9bd6a]" : "text-[#8a6d1f]",
+        ]}
+      >
+        Kesehatan Anda adalah Kebanggaan Kami
+      </span>
+      <span class="w-1 h-1 rotate-45 bg-[#c9a227] flex-shrink-0"></span>
+    </span>
   </div>
 </a>
