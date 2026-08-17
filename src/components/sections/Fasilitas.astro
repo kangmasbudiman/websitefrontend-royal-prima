@@ -16,7 +16,7 @@ if (items.length === 0) return null;
     <SectionHeading
       eyebrow="Sarana & Prasarana"
       title="Fasilitas Rumah Sakit"
-      desc="Fasilitas modern yang mendukung pelayanan kesehatan terbaik bagi pasien dan keluarga."
+      desc="Fasilitas modern yang mendukung pelayanan kesehatan terbaik bagi pasien dan keluarga. Klik untuk melihat detail."
       center
     />
 
@@ -24,26 +24,181 @@ if (items.length === 0) return null;
       {items.map((f, i) => {
         const img = gambarPertama(f.gambar);
         return (
-          <article data-reveal data-reveal-delay={(i % 3) * 100} class="card card-hover overflow-hidden h-full flex flex-col group">
+          <article
+            data-reveal
+            data-reveal-delay={(i % 3) * 100}
+            data-fasilitas-open={f.id}
+            tabindex="0"
+            role="button"
+            aria-haspopup="dialog"
+            aria-label={`Lihat detail ${f.nama_fasilitas}`}
+            class="card card-hover overflow-hidden h-full flex flex-col group cursor-pointer focus:outline-none focus-visible:ring-4 focus-visible:ring-prima/30"
+          >
             {img && (
-              <div class="aspect-[16/10] overflow-hidden bg-canvas">
+              <div class="aspect-[16/10] overflow-hidden bg-canvas relative">
                 <img
                   src={img}
                   alt={f.nama_fasilitas}
                   class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                   loading="lazy"
                 />
+                <div class="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-white/95 text-prima shadow-lg flex items-center justify-center opacity-0 translate-y-1.5 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="w-4 h-4">
+                    <path d="M7 17L17 7M9 7h8v8" />
+                  </svg>
+                </div>
               </div>
             )}
             <div class="p-6 flex-1 flex flex-col">
-              <h3 class="font-bold text-lg mb-2">{f.nama_fasilitas}</h3>
+              <h3 class="font-bold text-lg mb-2 group-hover:text-prima transition-colors">
+                {f.nama_fasilitas}
+              </h3>
               {f.deskripsi && (
-                <div class="text-sm text-muted leading-relaxed strip-html line-clamp-[10]" set:html={f.deskripsi} />
+                <div
+                  class="text-sm text-muted leading-relaxed strip-html line-clamp-3"
+                  set:html={f.deskripsi}
+                />
               )}
+              <span class="mt-4 inline-flex items-center gap-1.5 text-[13px] font-bold text-prima">
+                Lihat Detail
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  class="w-3.5 h-3.5 transition-transform group-hover:translate-x-1"
+                >
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </span>
             </div>
           </article>
         );
       })}
     </div>
   </div>
+
+  {items.map((f) => {
+    const img = gambarPertama(f.gambar);
+    return (
+      <template id={`fasilitas-content-${f.id}`}>
+        <div>
+          {img && (
+            <div class="relative aspect-[16/9] bg-canvas">
+              <img src={img} alt={f.nama_fasilitas} class="w-full h-full object-cover" />
+              <div class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent" />
+              <div class="absolute bottom-0 left-0 right-0 p-6 sm:p-8 text-white">
+                <span class="chip bg-white/15 text-white backdrop-blur-md">Sarana & Prasarana</span>
+                <h3 id="fasilitas-modal-title" class="mt-2 text-[clamp(20px,3vw,30px)] font-extrabold leading-tight">
+                  {f.nama_fasilitas}
+                </h3>
+              </div>
+            </div>
+          )}
+          <div class="p-6 sm:p-8">
+            {!img && (
+              <h3 id="fasilitas-modal-title" class="text-2xl font-extrabold mb-4">
+                {f.nama_fasilitas}
+              </h3>
+            )}
+            <div
+              class="strip-html text-[15px] text-ink-soft leading-relaxed"
+              set:html={f.deskripsi || "<p>Deskripsi fasilitas belum tersedia.</p>"}
+            />
+            <div class="mt-7 flex flex-wrap gap-3">
+              <a href="/kontak" class="btn">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                  <path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1l-2.3 2.2z" />
+                </svg>
+                Hubungi Kami
+              </a>
+            </div>
+          </div>
+        </div>
+      </template>
+    );
+  })}
+
+  <div id="fasilitas-modal" class="hidden fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-labelledby="fasilitas-modal-title">
+    <div class="absolute inset-0 bg-ink/80 backdrop-blur-sm fasilitas-modal-backdrop"></div>
+    <div class="relative h-full w-full flex items-center justify-center p-3 sm:p-4">
+      <div class="fasilitas-modal-dialog relative w-full max-w-3xl max-h-[94vh] bg-white rounded-3xl overflow-hidden shadow-[0_40px_100px_-20px_rgba(0,0,0,0.6)] flex flex-col">
+        <button
+          type="button"
+          class="fasilitas-modal-close absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white flex items-center justify-center hover:bg-white/30 hover:scale-105 transition-all shadow-lg"
+          aria-label="Tutup"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="w-4 h-4">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
+        <div class="fasilitas-modal-content overflow-y-auto"></div>
+      </div>
+    </div>
+  </div>
 </section>
+
+<style>
+  #fasilitas-modal:not(.hidden) .fasilitas-modal-dialog {
+    animation: fasilitasPop 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes fasilitasPop {
+    from {
+      opacity: 0;
+      transform: translateY(24px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  const modal = document.getElementById('fasilitas-modal');
+  const modalContent = modal?.querySelector('.fasilitas-modal-content');
+  let lastFocused: HTMLElement | null = null;
+
+  function openFasilitasModal(id: string) {
+    if (!modal || !modalContent) return;
+    const tpl = document.getElementById(`fasilitas-content-${id}`);
+    if (!tpl || !('content' in tpl)) return;
+    modalContent.innerHTML = '';
+    modalContent.appendChild((tpl as HTMLTemplateElement).content.cloneNode(true));
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    lastFocused = document.activeElement as HTMLElement;
+    modal.querySelector<HTMLElement>('.fasilitas-modal-close')?.focus();
+  }
+
+  function closeFasilitasModal() {
+    if (!modal) return;
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+    modalContent && (modalContent.innerHTML = '');
+    lastFocused?.focus();
+  }
+
+  document.querySelectorAll('[data-fasilitas-open]').forEach((el) => {
+    el.addEventListener('click', () => {
+      const id = el.getAttribute('data-fasilitas-open');
+      if (id) openFasilitasModal(id);
+    });
+    el.addEventListener('keydown', ((e: KeyboardEvent) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      const id = el.getAttribute('data-fasilitas-open');
+      if (id) openFasilitasModal(id);
+    }) as EventListener);
+  });
+
+  modal?.querySelector('.fasilitas-modal-close')?.addEventListener('click', closeFasilitasModal);
+  modal?.querySelector('.fasilitas-modal-backdrop')?.addEventListener('click', closeFasilitasModal);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+      closeFasilitasModal();
+    }
+  });
+</script>

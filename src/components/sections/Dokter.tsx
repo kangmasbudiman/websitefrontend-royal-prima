@@ -35,6 +35,25 @@ function initialsOf(nama: string) {
     .toUpperCase();
 }
 
+function socialsOf(dokter: Dokter) {
+  return (
+    [
+      { key: "facebook", url: dokter.facebook },
+      { key: "instagram", url: dokter.instagram },
+      { key: "twitter", url: dokter.twitter },
+    ] as const
+  ).filter((s) => s.url && s.url !== "-");
+}
+
+function nextPraktikDay(hariList: string[], todayIdx: number): string | null {
+  const idxs = hariList.map((h) => HARI_ORDER.indexOf(h)).filter((i) => i >= 0);
+  for (let off = 1; off <= 7; off++) {
+    const t = (todayIdx + off) % 7;
+    if (idxs.includes(t)) return HARI_ORDER[t];
+  }
+  return null;
+}
+
 export default function DokterSection({
   items,
   jadwal,
@@ -79,6 +98,12 @@ export default function DokterSection({
     return map;
   }, [dokterWithJadwal]);
 
+  const todayCount = useMemo(() => {
+    if (todayIdx == null) return 0;
+    const hari = HARI_ORDER[todayIdx];
+    return dokterWithJadwal.filter((d) => d.jadwal?.some((j) => j.hari === hari)).length;
+  }, [dokterWithJadwal, todayIdx]);
+
   const filtered = useMemo(() => {
     let arr = dokterWithJadwal;
     if (filterPoli !== "all") arr = arr.filter((d) => d.poliklinikid === filterPoli);
@@ -97,31 +122,38 @@ export default function DokterSection({
   const headingTitle = activePoli
     ? `Spesialis ${activePoli.nama.replace(/^Klinik\s+/i, "")}`
     : "Tim Dokter Spesialis";
-  const countText =
-    filtered.length === dokterWithJadwal.length
-      ? `${dokterWithJadwal.length} dokter berpengalaman dengan keahlian spesifik di setiap bidang, siap melayani Anda.`
-      : `Menampilkan ${filtered.length} dari ${dokterWithJadwal.length} dokter`;
   const polisWithDoctors = poliklinikList.filter((p) => (poliCount.get(p.id) ?? 0) > 0);
+  const [spotlight, ...rest] = filtered;
 
   return (
     <section id="dokter" className="section bg-canvas relative overflow-hidden">
       <div className="absolute top-20 -right-24 w-96 h-96 rounded-full bg-prima-soft blur-3xl opacity-60 pointer-events-none" />
       <div className="absolute bottom-10 -left-24 w-96 h-96 rounded-full bg-teal/5 blur-3xl pointer-events-none" />
 
-      <div className="wrap relative">
-        <div
-          data-reveal
-          className="mb-8 lg:mb-10 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6"
-        >
-          <div className="max-w-xl">
+      <div className="wrap relative grid lg:grid-cols-[300px_1fr] gap-8 lg:gap-10 items-start">
+        <aside data-reveal className="lg:sticky lg:top-24 flex flex-col gap-5">
+          <div>
             <div className="eyebrow mb-3 inline-flex">Tim Medis</div>
-            <h2 className="text-[clamp(28px,3.6vw,44px)] font-extrabold leading-tight tracking-tight text-balance">
+            <h2 className="text-[clamp(26px,3vw,38px)] font-extrabold leading-tight tracking-tight text-balance">
               {headingTitle}
             </h2>
-            <p className="mt-3 text-muted text-[15.5px] leading-relaxed">{countText}</p>
+            <p className="mt-3 text-muted text-[15px] leading-relaxed">
+              {dokterWithJadwal.length} dokter berpengalaman dengan keahlian spesifik di
+              setiap bidang, siap melayani Anda.
+            </p>
           </div>
 
-          <div className="relative w-full lg:w-96 lg:flex-shrink-0">
+          {todayCount > 0 && (
+            <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-teal/10 border border-teal/20 text-teal-d text-[13px] font-bold">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-teal" />
+              </span>
+              {todayCount} dokter praktik hari ini
+            </div>
+          )}
+
+          <div className="relative">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-d pointer-events-none">
               <svg
                 viewBox="0 0 24 24"
@@ -137,7 +169,7 @@ export default function DokterSection({
             </div>
             <input
               type="search"
-              placeholder="Cari nama dokter atau spesialisasi..."
+              placeholder="Cari nama dokter / spesialis..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-11 pr-10 py-3.5 rounded-2xl bg-white border border-line shadow-sm outline-none text-ink placeholder:text-muted-d text-[14.5px] focus:border-prima focus:ring-4 focus:ring-prima/10 transition"
@@ -160,11 +192,12 @@ export default function DokterSection({
               </button>
             )}
           </div>
-        </div>
 
-        {polisWithDoctors.length > 1 && (
-          <div className="mb-8">
-            <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {polisWithDoctors.length > 1 && (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted-d px-1">
+                Spesialisasi
+              </span>
               <FilterChip
                 active={filterPoli === "all"}
                 onClick={() => setFilterPoli("all")}
@@ -183,75 +216,77 @@ export default function DokterSection({
                 </FilterChip>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </aside>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {filtered.map((d) => (
-            <DokterCard
-              key={d.id}
-              dokter={d}
-              img={gambarPertama(d.potourl)}
+        <div data-reveal>
+          {spotlight && (
+            <SpotlightCard
+              dokter={spotlight}
+              img={gambarPertama(spotlight.potourl)}
               todayIdx={todayIdx}
             />
-          ))}
-        </div>
+          )}
 
-        {filtered.length === 0 && (
-          <div className="text-center py-20">
-            <div className="w-24 h-24 rounded-t-[999px] rounded-b-3xl bg-gradient-to-br from-prima-soft to-teal/10 flex items-center justify-center mx-auto mb-5">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                className="w-9 h-9 text-prima"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="M21 21l-4.3-4.3" />
-              </svg>
-            </div>
-            <h3 className="font-bold text-lg text-ink mb-1">Dokter tidak ditemukan</h3>
-            <p className="text-muted max-w-sm mx-auto mb-5">
-              Coba ubah kata kunci pencarian atau pilih kategori spesialisasi lain.
-            </p>
-            <button
-              onClick={() => {
-                setFilterPoli("all");
-                setSearch("");
-              }}
-              className="btn btn-outline"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                className="w-4 h-4"
-              >
-                <path d="M3 12a9 9 0 0115.5-6.36L21 8M21 3v5h-5M21 12a9 9 0 01-15.5 6.36L3 16M3 21v-5h5" />
-              </svg>
-              Reset Pencarian
-            </button>
+          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            {rest.map((d, i) => (
+              <DokterCard
+                key={d.id}
+                dokter={d}
+                img={gambarPertama(d.potourl)}
+                todayIdx={todayIdx}
+                index={i + 2}
+              />
+            ))}
           </div>
-        )}
+
+          {filtered.length === 0 && (
+            <div className="text-center py-20">
+              <div className="w-24 h-24 mx-auto mb-5 flex items-center justify-center bg-prima-soft/70">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  className="w-9 h-9 text-prima"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="M21 21l-4.3-4.3" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-lg text-ink mb-1">Dokter tidak ditemukan</h3>
+              <p className="text-muted max-w-sm mx-auto mb-5">
+                Coba ubah kata kunci pencarian atau pilih kategori spesialisasi lain.
+              </p>
+              <button
+                onClick={() => {
+                  setFilterPoli("all");
+                  setSearch("");
+                }}
+                className="btn btn-outline"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  className="w-4 h-4"
+                >
+                  <path d="M3 12a9 9 0 0115.5-6.36L21 8M21 3v5h-5M21 12a9 9 0 01-15.5 6.36L3 16M3 21v-5h5" />
+                </svg>
+                Reset Pencarian
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
 }
 
-function nextPraktikDay(hariList: string[], todayIdx: number): string | null {
-  const idxs = hariList.map((h) => HARI_ORDER.indexOf(h)).filter((i) => i >= 0);
-  for (let off = 1; off <= 7; off++) {
-    const t = (todayIdx + off) % 7;
-    if (idxs.includes(t)) return HARI_ORDER[t];
-  }
-  return null;
-}
-
-function DokterCard({
+function SpotlightCard({
   dokter,
   img,
   todayIdx,
@@ -260,25 +295,148 @@ function DokterCard({
   img: string;
   todayIdx: number | null;
 }) {
+  const jadwalDokter = dokter.jadwal ?? [];
+  const isToday =
+    todayIdx != null && jadwalDokter.some((j) => j.hari === HARI_ORDER[todayIdx]);
+  const socials = socialsOf(dokter);
+
+  return (
+    <article className="group relative mb-5 flex flex-col sm:flex-row rounded-3xl bg-white border border-prima/20 shadow-[var(--sh-card)] hover:shadow-[var(--sh-card-hover)] transition-all duration-500 overflow-hidden">
+      <div className="relative sm:w-[250px] sm:flex-shrink-0 aspect-[16/10] sm:aspect-auto sm:min-h-[320px] bg-prima-tint overflow-hidden">
+        {img ? (
+          <img
+            src={img}
+            alt={dokter.nama}
+            className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-prima via-prima-l to-prima-d flex items-center justify-center">
+            <span className="text-6xl font-extrabold text-white/90 tracking-tight">
+              {initialsOf(dokter.nama)}
+            </span>
+          </div>
+        )}
+        <div className="absolute inset-0 ring-1 ring-inset ring-black/5 pointer-events-none" />
+      </div>
+
+      <div className="flex-1 p-6 sm:p-7 flex flex-col">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-coral-soft text-coral-d text-[11px] font-bold">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4-6.2-4.6-6.2 4.6 2.4-7.4L2 9.4h7.6z" />
+            </svg>
+            Dokter Sorotan
+          </span>
+          {dokter.poliklinik?.nama && (
+            <span className="chip bg-prima-soft text-prima-d">
+              {dokter.poliklinik.nama.replace(/^Klinik\s+/i, "")}
+            </span>
+          )}
+          {isToday && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal text-white text-[11px] font-bold">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-80" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+              </span>
+              Praktik Hari Ini
+            </span>
+          )}
+        </div>
+
+        <h3 className="mt-3 text-[20px] sm:text-[24px] font-extrabold leading-tight text-ink">
+          {dokter.nama}
+        </h3>
+        {dokter.spesialist && (
+          <p className="mt-1 text-[14px] font-semibold text-prima">{dokter.spesialist}</p>
+        )}
+
+        {jadwalDokter.length > 0 && (
+          <div className="mt-4 grid grid-cols-2 xl:grid-cols-3 gap-1.5 max-w-lg">
+            {jadwalDokter.map((j) => (
+              <div
+                key={j.id}
+                className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl border ${
+                  todayIdx != null && j.hari === HARI_ORDER[todayIdx]
+                    ? "bg-teal/10 border-teal/30"
+                    : "bg-canvas border-transparent"
+                }`}
+              >
+                <span className="text-[11px] font-bold uppercase tracking-wide text-ink-soft">
+                  {j.hari}
+                </span>
+                <span className="text-[11px] font-semibold text-muted tabular-nums">
+                  {j.jamMulai}–{j.jamSelesai}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-auto pt-5 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex gap-1.5">
+            {socials.map((s) => (
+              <a
+                key={s.key}
+                href={s.url ?? "#"}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={s.key}
+                className="w-9 h-9 rounded-full bg-canvas hover:bg-prima hover:text-white text-ink-soft flex items-center justify-center transition-all hover:-translate-y-0.5"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                  <path d={SOCIAL_ICONS[s.key]} />
+                </svg>
+              </a>
+            ))}
+          </div>
+          <a
+            href="/kontak"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-prima hover:bg-prima-d text-white text-[13px] font-bold transition-colors shadow-lg shadow-prima/25"
+          >
+            Buat Janji
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              className="w-4 h-4"
+            >
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function DokterCard({
+  dokter,
+  img,
+  todayIdx,
+  index,
+}: {
+  dokter: DokterWithPoli;
+  img: string;
+  todayIdx: number | null;
+  index: number;
+}) {
   const [open, setOpen] = useState(false);
   const jadwalDokter = dokter.jadwal ?? [];
   const isToday =
     todayIdx != null && jadwalDokter.some((j) => j.hari === HARI_ORDER[todayIdx]);
   const nextDay =
-    !isToday && todayIdx != null ? nextPraktikDay(jadwalDokter.map((j) => j.hari), todayIdx) : null;
-
-  const socials = (
-    [
-      { key: "facebook", url: dokter.facebook },
-      { key: "instagram", url: dokter.instagram },
-      { key: "twitter", url: dokter.twitter },
-    ] as const
-  ).filter((s) => s.url && s.url !== "-");
+    !isToday && todayIdx != null
+      ? nextPraktikDay(jadwalDokter.map((j) => j.hari), todayIdx)
+      : null;
+  const socials = socialsOf(dokter);
 
   return (
-    <article className="group relative flex flex-col rounded-[26px] bg-white border border-line shadow-[var(--sh-card)] hover:shadow-[var(--sh-card-hover)] hover:-translate-y-1.5 hover:border-prima/25 transition-all duration-500">
+    <article className="group relative flex flex-col rounded-3xl bg-white border border-line shadow-[var(--sh-card)] hover:shadow-[var(--sh-card-hover)] hover:-translate-y-1.5 hover:border-prima/25 transition-all duration-500">
       <div className="relative mx-3 mt-3">
-        <div className="relative aspect-[4/5] rounded-t-[999px] rounded-b-[22px] overflow-hidden bg-prima-tint">
+        <div className="relative aspect-[4/5] overflow-hidden bg-prima-tint">
           {img ? (
             <img
               src={img}
@@ -293,15 +451,17 @@ function DokterCard({
               </span>
             </div>
           )}
-          <div className="absolute inset-0 rounded-t-[999px] rounded-b-[22px] ring-1 ring-inset ring-black/5 pointer-events-none" />
+          <div className="absolute inset-0 ring-1 ring-inset ring-black/5 pointer-events-none" />
         </div>
+
+        <span className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur text-[11px] font-extrabold text-prima-d flex items-center justify-center shadow-md border border-white/50">
+          {String(index).padStart(2, "0")}
+        </span>
 
         {(isToday || nextDay) && (
           <span
-            className={`absolute -bottom-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap shadow-lg border ${
-              isToday
-                ? "bg-teal text-white border-white/30"
-                : "bg-white text-ink-soft border-line"
+            className={`absolute -bottom-3.5 left-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap shadow-lg border ${
+              isToday ? "bg-teal text-white border-white/30" : "bg-white text-ink-soft border-line"
             }`}
           >
             {isToday ? (
@@ -322,28 +482,26 @@ function DokterCard({
         )}
       </div>
 
-      <div className="flex-1 flex flex-col items-center text-center px-5 pt-6 pb-5">
+      <div className="flex-1 flex flex-col text-left px-5 pb-5 pt-6">
         {dokter.poliklinik?.nama && (
-          <span className="chip bg-prima-soft text-prima-d mb-2">
+          <span className="self-start chip bg-prima-soft text-prima-d mb-2">
             {dokter.poliklinik.nama.replace(/^Klinik\s+/i, "")}
           </span>
         )}
-        <h3 className="font-extrabold text-[16px] leading-snug text-ink pb-1">
-          {dokter.nama}
-        </h3>
+        <h3 className="font-extrabold text-[16px] leading-snug text-ink">{dokter.nama}</h3>
         {dokter.spesialist && (
-          <p className="text-[13px] font-semibold text-prima leading-snug">
+          <p className="mt-0.5 text-[13px] font-semibold text-prima leading-snug">
             {dokter.spesialist}
           </p>
         )}
 
         {jadwalDokter.length > 0 && (
           <>
-            <div className="mt-4 mb-2 flex flex-wrap justify-center gap-1.5">
+            <div className="mt-4 mb-2 flex flex-wrap gap-1.5">
               {jadwalDokter.map((j) => (
                 <span
                   key={j.id}
-                  className={`px-2 py-1 rounded-lg text-[11px] font-bold ${
+                  className={`px-2 py-1 rounded-md text-[11px] font-bold ${
                     todayIdx != null && j.hari === HARI_ORDER[todayIdx]
                       ? "bg-teal text-white"
                       : "bg-canvas text-ink-soft"
@@ -356,7 +514,7 @@ function DokterCard({
             <button
               onClick={() => setOpen((v) => !v)}
               aria-expanded={open}
-              className="inline-flex items-center gap-1 text-[11.5px] font-bold text-prima hover:text-prima-d transition-colors"
+              className="self-start inline-flex items-center gap-1 text-[11.5px] font-bold text-prima hover:text-prima-d transition-colors"
             >
               {open ? "Sembunyikan jam praktik" : "Lihat jam praktik"}
               <svg
@@ -450,15 +608,15 @@ function FilterChip({
   return (
     <button
       onClick={onClick}
-      className={`inline-flex items-center gap-2 pl-4 pr-2.5 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all border ${
+      className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl text-[13.5px] font-semibold text-left transition-all border ${
         active
-          ? "bg-gradient-to-r from-prima to-prima-d text-white border-transparent shadow-lg shadow-prima/25"
+          ? "bg-gradient-to-r from-prima to-prima-d text-white border-transparent shadow-md shadow-prima/25"
           : "bg-white text-ink-soft border-line hover:border-prima/40 hover:text-prima"
       }`}
     >
-      {children}
+      <span className="truncate">{children}</span>
       <span
-        className={`text-[11px] font-bold rounded-full min-w-5 px-1.5 py-0.5 ${
+        className={`text-[11px] font-bold rounded-full min-w-5 px-1.5 py-0.5 flex-shrink-0 ${
           active ? "bg-white/20 text-white" : "bg-canvas text-muted-d"
         }`}
       >
