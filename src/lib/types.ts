@@ -119,6 +119,16 @@ export type PertanyaanPasien = {
   pesan: string;
 };
 
+export type Statistik = {
+  id: number;
+  created_at: string;
+  ikon: string | null;
+  nilai: string;
+  label: string;
+  urutan: number;
+  status: boolean | null;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -135,6 +145,7 @@ export type Database = {
       tentangkami: { Row: Tentangkami; Insert: Partial<Tentangkami>; Update: Partial<Tentangkami> };
       infoCard: { Row: InfoCard; Insert: Partial<InfoCard>; Update: Partial<InfoCard> };
       pertanyaanPasien: { Row: PertanyaanPasien; Insert: Partial<PertanyaanPasien>; Update: Partial<PertanyaanPasien> };
+      statistik: { Row: Statistik; Insert: Partial<Statistik>; Update: Partial<Statistik> };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

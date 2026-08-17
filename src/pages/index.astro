@@ -21,6 +21,7 @@ import type {
   Asuransi,
   Artikel,
   Testimoni,
+  Statistik,
 } from "../lib/types";
 
 const [
@@ -35,6 +36,7 @@ const [
   artikelRes,
   beritaRes,
   testiRes,
+  statistikRes,
 ] = await Promise.all([
   supabase.from("infoCard").select("*").limit(1).maybeSingle(),
   supabase.from("slider").select("*").order("id"),
@@ -55,17 +57,26 @@ const [
     .order("created_at", { ascending: false })
     .limit(4),
   supabase.from("testimoni").select("*").order("id"),
+  supabase.from("statistik").select("*").order("urutan").order("id"),
 ]);
 
 const info = (infoRes.data as unknown as InfoCard | null) ?? null;
 const dokter = (dokterRes.data as unknown as Dokter[]) ?? [];
 const poliklinik = (poliRes.data as unknown as Poliklinik[]) ?? [];
+const statistik = ((statistikRes.data as unknown as Statistik[]) ?? []).filter(
+  (s) => s.status !== false
+);
 ---
 
 <SiteLayout info={info}>
-  <HeroSlider client:load items={(sliderRes.data as unknown as Slider[]) ?? []} info={info} />
+  <HeroSlider
+    client:load
+    items={(sliderRes.data as unknown as Slider[]) ?? []}
+    info={info}
+    stats={statistik}
+  />
   <InfoCards info={info} />
-  <Tentang items={(tentangRes.data as unknown as Tentangkami[]) ?? []} />
+  <Tentang items={(tentangRes.data as unknown as Tentangkami[]) ?? []} stats={statistik} />
   <PoliklinikSection
     items={poliklinik}
     dokter={dokter}

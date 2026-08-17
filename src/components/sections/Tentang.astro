@@ -1,14 +1,37 @@
 ---
-import type { Tentangkami } from "../../lib/types";
+import type { Tentangkami, Statistik } from "../../lib/types";
 import { gambarPertama, parseGambar } from "../../lib/utils";
 
 export interface Props {
   items: Tentangkami[];
+  stats?: Statistik[];
 }
 
-const { items } = Astro.props;
+const { items, stats = [] } = Astro.props;
 const aktif = items.filter((t) => t.status !== false).slice(0, 3);
 if (aktif.length === 0) return null;
+
+// Statistik "Komitmen Kami" — dari tabel statistik (admin), fallback default
+const komitmenStats =
+  stats.length > 0
+    ? stats.slice(0, 4).map((s) => ({ ikon: s.ikon, nilai: s.nilai, label: s.label }))
+    : [
+        { ikon: "tahun", nilai: "15+", label: "Tahun" },
+        { ikon: "dokter", nilai: "30+", label: "Spesialis" },
+        { ikon: "igd", nilai: "24/7", label: "IGD" },
+      ];
+
+const STAT_ICON_PATHS: Record<string, string> = {
+  dokter:
+    "M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-4.4 0-8 1.8-8 4v3h16v-3c0-2.2-3.6-4-8-4z",
+  poliklinik:
+    "M4 21V8l8-5 8 5v13M4 21h16M9.5 10h.01M14.5 10h.01M9.5 13.5h.01M14.5 13.5h.01M10 21v-4h4v4",
+  igd: "M3.5 12H7l2.5-6.5L14 18l2-6h4.5",
+  tahun:
+    "M7 2.5v3M17 2.5v3M3.5 9.5h17M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v13a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V6A1.5 1.5 0 0 1 5 4.5z",
+  pasien:
+    "M12 20.5S3.5 15.5 3.5 9.4C3.5 6.5 5.7 4.5 8 4.5c1.7 0 3.2 1 4 2.4.8-1.4 2.3-2.4 4-2.4 2.3 0 4.5 2 4.5 4.9 0 6.1-8.5 11.1-8.5 11.1z",
+};
 
 const [featured, ...rest] = aktif;
 const featuredImg = gambarPertama(featured.gambar);
@@ -292,19 +315,16 @@ const yt = youtubeId(featured.linkyoutube);
             <p class="text-white font-extrabold text-lg leading-snug mb-4">
               "Memberikan layanan kesehatan terbaik dengan sepenuh hati"
             </p>
-            <div class="grid grid-cols-3 gap-3 pt-4 border-t border-white/20">
-              <div>
-                <div class="font-extrabold text-2xl leading-none">15+</div>
-                <div class="text-[10px] uppercase tracking-wider text-white/70 font-semibold mt-1">Tahun</div>
-              </div>
-              <div>
-                <div class="font-extrabold text-2xl leading-none">30+</div>
-                <div class="text-[10px] uppercase tracking-wider text-white/70 font-semibold mt-1">Spesialis</div>
-              </div>
-              <div>
-                <div class="font-extrabold text-2xl leading-none">24/7</div>
-                <div class="text-[10px] uppercase tracking-wider text-white/70 font-semibold mt-1">IGD</div>
-              </div>
+            <div class={`grid gap-3 pt-4 border-t border-white/20 ${komitmenStats.length === 4 ? "grid-cols-2" : "grid-cols-3"}`}>
+              {komitmenStats.map((s) => (
+                <div>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-white/50 mb-1.5" aria-hidden="true">
+                    <path d={STAT_ICON_PATHS[s.ikon ?? ""] ?? "M12 5v14M5 12h14"}></path>
+                  </svg>
+                  <div class="font-extrabold text-2xl leading-none">{s.nilai}</div>
+                  <div class="text-[10px] uppercase tracking-wider text-white/70 font-semibold mt-1">{s.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { InfoCard, Slider } from "../../lib/types";
+import type { InfoCard, Slider, Statistik } from "../../lib/types";
 import { gambarPertama } from "../../lib/utils";
 
 const AUTOPLAY_MS = 7000;
@@ -43,19 +43,52 @@ const PLACEHOLDER_SLIDES = [
   },
 ];
 
-const STATS = [
-  { value: "30+", label: "Dokter Spesialis" },
-  { value: "20+", label: "Poliklinik" },
-  { value: "24/7", label: "IGD Siaga" },
-  { value: "15+", label: "Tahun Pengalaman" },
+const DEFAULT_STATS = [
+  { ikon: "dokter", value: "30+", label: "Dokter Spesialis" },
+  { ikon: "poliklinik", value: "20+", label: "Poliklinik" },
+  { ikon: "igd", value: "24/7", label: "IGD Siaga" },
+  { ikon: "tahun", value: "15+", label: "Tahun Pengalaman" },
 ];
+
+// Ikon stroke 24x24 per key "ikon" dari tabel statistik
+const STAT_ICONS: Record<string, string> = {
+  dokter:
+    "M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-4.4 0-8 1.8-8 4v3h16v-3c0-2.2-3.6-4-8-4z",
+  poliklinik:
+    "M4 21V8l8-5 8 5v13M4 21h16M9.5 10h.01M14.5 10h.01M9.5 13.5h.01M14.5 13.5h.01M10 21v-4h4v4",
+  igd: "M3.5 12H7l2.5-6.5L14 18l2-6h4.5",
+  tahun:
+    "M7 2.5v3M17 2.5v3M3.5 9.5h17M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v13a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V6A1.5 1.5 0 0 1 5 4.5z",
+  pasien:
+    "M12 20.5S3.5 15.5 3.5 9.4C3.5 6.5 5.7 4.5 8 4.5c1.7 0 3.2 1 4 2.4.8-1.4 2.3-2.4 4-2.4 2.3 0 4.5 2 4.5 4.9 0 6.1-8.5 11.1-8.5 11.1z",
+};
+
+function StatIcon({ name, className }: { name: string | null; className?: string }) {
+  const d = (name && STAT_ICONS[name]) || "M12 5v14M5 12h14";
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d={d} />
+    </svg>
+  );
+}
 
 export default function HeroSlider({
   items,
   info,
+  stats,
 }: {
   items: Slider[];
   info?: InfoCard | null;
+  stats?: Statistik[] | null;
 }) {
   const slides = USE_DB_SLIDES
     ? items.map((s, i) => ({
@@ -101,6 +134,11 @@ export default function HeroSlider({
     el.style.transition = `width ${AUTOPLAY_MS}ms linear`;
     el.style.width = "100%";
   }, [i, len, paused]);
+
+  const STATS =
+    stats && stats.length > 0
+      ? stats.map((s) => ({ ikon: s.ikon, value: s.nilai, label: s.label }))
+      : DEFAULT_STATS;
 
   const emergencyPhone = info?.emergency_phone ?? "119";
   const receptionPhone = info?.hp ?? null;
@@ -265,7 +303,11 @@ export default function HeroSlider({
             {/* Stats strip */}
             <div className="hero-stagger-5 grid grid-cols-2 sm:grid-cols-4 gap-px rounded-2xl overflow-hidden bg-white/10 backdrop-blur-md border border-white/15 max-w-3xl">
               {STATS.map((s) => (
-                <div key={s.label} className="bg-ink/30 backdrop-blur-md px-5 py-4">
+                <div key={s.label} className="group/stat bg-ink/30 backdrop-blur-md px-5 py-4 relative overflow-hidden">
+                  <StatIcon
+                    name={s.ikon}
+                    className="w-5 h-5 text-teal mb-2 transition-transform duration-300 group-hover/stat:scale-110"
+                  />
                   <div className="text-2xl lg:text-3xl font-extrabold tracking-tight leading-none">
                     {s.value}
                   </div>
