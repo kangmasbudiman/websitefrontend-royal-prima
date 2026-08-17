@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { InfoCard, Slider, Statistik } from "../../lib/types";
-import { gambarPertama } from "../../lib/utils";
+import { gambarPertama, waUrl } from "../../lib/utils";
 
 const AUTOPLAY_MS = 7000;
 
@@ -252,7 +252,9 @@ export default function HeroSlider({
 
               <div className="hero-stagger-5 mt-9 flex flex-wrap items-center gap-3">
                 <a
-                  href="/kontak"
+                  href={waUrl(info?.hp, "Halo RS Royal Prima Jambi, saya ingin membuat janji temu dengan dokter.") || "#kontak"}
+                  target="_blank"
+                  rel="noreferrer"
                   className="group relative overflow-hidden inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-coral hover:bg-coral-d text-white shadow-2xl shadow-coral/40 transition-all hover:-translate-y-0.5"
                 >
                   <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
@@ -411,7 +413,12 @@ export default function HeroSlider({
                     <div className="text-[9px] uppercase tracking-[0.18em] text-white/70 font-bold">
                       Resepsionis
                     </div>
-                    <a href={`tel:${receptionPhone}`} className="text-sm font-extrabold tracking-tight hover:text-teal transition">
+                    <a
+                      href={waUrl(receptionPhone, "Halo RS Royal Prima Jambi, saya ingin bertanya.") || "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm font-extrabold tracking-tight hover:text-teal transition"
+                    >
                       {receptionPhone}
                     </a>
                   </div>

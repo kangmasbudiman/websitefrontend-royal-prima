@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Dokter, Jadwal } from "../../lib/types";
-import { gambarPertama, sortByHari } from "../../lib/utils";
+import { gambarPertama, sortByHari, waUrl } from "../../lib/utils";
 
 type DokterWithPoli = Dokter & { jadwal?: Jadwal[] };
 
@@ -58,10 +58,12 @@ export default function DokterSection({
   items,
   jadwal,
   poliklinikList,
+  waPhone,
 }: {
   items: Dokter[];
   jadwal: Jadwal[];
   poliklinikList: { id: number; nama: string }[];
+  waPhone?: string | null;
 }) {
   const [filterPoli, setFilterPoli] = useState<number | "all">("all");
   const [search, setSearch] = useState("");
@@ -225,6 +227,7 @@ export default function DokterSection({
               dokter={spotlight}
               img={gambarPertama(spotlight.potourl)}
               todayIdx={todayIdx}
+              waPhone={waPhone}
             />
           )}
 
@@ -236,6 +239,7 @@ export default function DokterSection({
                 img={gambarPertama(d.potourl)}
                 todayIdx={todayIdx}
                 index={i + 2}
+                waPhone={waPhone}
               />
             ))}
           </div>
@@ -290,15 +294,20 @@ function SpotlightCard({
   dokter,
   img,
   todayIdx,
+  waPhone,
 }: {
   dokter: DokterWithPoli;
   img: string;
   todayIdx: number | null;
+  waPhone?: string | null;
 }) {
   const jadwalDokter = dokter.jadwal ?? [];
   const isToday =
     todayIdx != null && jadwalDokter.some((j) => j.hari === HARI_ORDER[todayIdx]);
   const socials = socialsOf(dokter);
+  const waHref =
+    waUrl(waPhone, `Halo RS Royal Prima Jambi, saya ingin membuat janji temu dengan ${dokter.nama}.`) ||
+    "#kontak";
 
   return (
     <article className="group relative mb-5 flex flex-col sm:flex-row rounded-3xl bg-white border border-prima/20 shadow-[var(--sh-card)] hover:shadow-[var(--sh-card-hover)] transition-all duration-500 overflow-hidden">
@@ -391,7 +400,9 @@ function SpotlightCard({
             ))}
           </div>
           <a
-            href="/kontak"
+            href={waHref}
+            target="_blank"
+            rel="noreferrer"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-prima hover:bg-prima-d text-white text-[13px] font-bold transition-colors shadow-lg shadow-prima/25"
           >
             Buat Janji
@@ -417,11 +428,13 @@ function DokterCard({
   img,
   todayIdx,
   index,
+  waPhone,
 }: {
   dokter: DokterWithPoli;
   img: string;
   todayIdx: number | null;
   index: number;
+  waPhone?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const jadwalDokter = dokter.jadwal ?? [];
@@ -432,6 +445,9 @@ function DokterCard({
       ? nextPraktikDay(jadwalDokter.map((j) => j.hari), todayIdx)
       : null;
   const socials = socialsOf(dokter);
+  const waHref =
+    waUrl(waPhone, `Halo RS Royal Prima Jambi, saya ingin membuat janji temu dengan ${dokter.nama}.`) ||
+    "#kontak";
 
   return (
     <article className="group relative flex flex-col rounded-3xl bg-white border border-line shadow-[var(--sh-card)] hover:shadow-[var(--sh-card-hover)] hover:-translate-y-1.5 hover:border-prima/25 transition-all duration-500">
@@ -573,7 +589,9 @@ function DokterCard({
             ))}
           </div>
           <a
-            href="/kontak"
+            href={waHref}
+            target="_blank"
+            rel="noreferrer"
             className="inline-flex items-center gap-1 text-[12.5px] font-bold text-prima hover:text-prima-d transition-colors group/cta"
           >
             Buat Janji

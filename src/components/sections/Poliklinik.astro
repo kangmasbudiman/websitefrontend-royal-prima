@@ -1,14 +1,15 @@
 ---
 import type { Poliklinik, Dokter, Jadwal } from "../../lib/types";
-import { gambarPertama } from "../../lib/utils";
+import { gambarPertama, waUrl } from "../../lib/utils";
 
 export interface Props {
   items: Poliklinik[];
   dokter?: Dokter[];
   jadwal?: Jadwal[];
+  waPhone?: string | null;
 }
 
-const { items, dokter = [], jadwal = [] } = Astro.props;
+const { items, dokter = [], jadwal = [], waPhone } = Astro.props;
 if (items.length === 0) return null;
 
 // === Helpers: derive doctor + schedule info per poliklinik ===
@@ -570,7 +571,12 @@ const rest = items.slice(1);
               <p class="text-xs text-ink-soft/70 text-center sm:text-left">
                 Butuh bantuan? Hubungi resepsionis untuk membuat janji.
               </p>
-              <a href="#kontak" class="modal-close-cta inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-coral to-coral-d text-white text-sm font-bold shadow-lg shadow-coral/30 hover:-translate-y-0.5 transition-all whitespace-nowrap">
+              <a
+                href={waUrl(waPhone, `Halo RS Royal Prima Jambi, saya ingin membuat janji temu di ${c.nama}.`) || "#kontak"}
+                target="_blank"
+                rel="noreferrer"
+                class="modal-close-cta inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-coral to-coral-d text-white text-sm font-bold shadow-lg shadow-coral/30 hover:-translate-y-0.5 transition-all whitespace-nowrap"
+              >
                 Buat Janji
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5">
                   <path d="M5 12h14M13 6l6 6-6 6" />

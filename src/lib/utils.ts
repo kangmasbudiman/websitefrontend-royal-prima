@@ -41,6 +41,20 @@ export function rawHtml(html: string | null | undefined): string {
   return html ?? "";
 }
 
+// Link chat WhatsApp dari nomor HP rumah sakit. Menerima format +62…, 62…,
+// atau 08…; teks percakapan otomatis terisi (encoded).
+export function waUrl(hp: string | null | undefined, text?: string): string {
+  if (!hp) return "";
+  const digits = hp.replace(/\D/g, "");
+  if (!digits) return "";
+  const intl = digits.startsWith("62")
+    ? digits
+    : digits.startsWith("0")
+      ? `62${digits.slice(1)}`
+      : digits;
+  return text ? `https://wa.me/${intl}?text=${encodeURIComponent(text)}` : `https://wa.me/${intl}`;
+}
+
 // Validate a URL/string from the database. Returns the value if it looks like a
 // real link (http(s), mailto:, tel:, or absolute path / anchor), else fallback.
 export function safeUrl(value: string | null | undefined, fallback = "#"): string {

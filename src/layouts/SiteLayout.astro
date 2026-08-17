@@ -51,12 +51,12 @@ const {
   </head>
   <body>
     <Topbar info={info} />
-    <Nav emergencyPhone={info?.emergency_phone} />
+    <Nav emergencyPhone={info?.emergency_phone} hp={info?.hp} />
     <main>
       <slot />
     </main>
     <Footer info={info} />
-    <Fab />
+    <Fab phone={info?.hp} />
 
     <script>
       // Global IntersectionObserver — adds `.in` to any [data-reveal] element

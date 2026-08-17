@@ -1,11 +1,20 @@
 ---
 // Floating WhatsApp button — appears after 400px scroll.
 // Initially hidden via CSS class; vanilla JS toggles on scroll.
+import { waUrl } from "../lib/utils";
+
+export interface Props {
+  phone?: string | null;
+}
+
+const { phone } = Astro.props;
+const href = waUrl(phone, "Halo RS Royal Prima Jambi, saya ingin bertanya.");
+if (!href) return null;
 ---
 
 <a
   data-fab
-  href="https://wa.me/6288100000000"
+  href={href}
   target="_blank"
   rel="noreferrer"
   aria-label="WhatsApp"
