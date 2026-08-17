@@ -1,5 +1,5 @@
 ---
-// Brand logo + name. Pure presentational.
+// Brand logo. Header memakai file logo resmi; footer pakai lockup teks terang.
 export interface Props {
   light?: boolean;
 }
@@ -7,34 +7,29 @@ export interface Props {
 const { light = false } = Astro.props;
 ---
 
-<a href="/" class="flex items-center gap-3 group">
-  <img
-    src="/logo-rs.png"
-    alt="Logo RS Royal Prima Jambi"
-    width="46"
-    height="46"
-    class="w-[46px] h-[46px] object-contain drop-shadow-sm group-hover:scale-105 transition-transform"
-  />
-  <div class="leading-none">
-    <span
-      class:list={[
-        "block font-serif font-extrabold tracking-wide whitespace-nowrap text-[13.5px] sm:text-[16px]",
-        light ? "text-white" : "text-prima-d",
-      ]}
-    >
-      R.S. ROYAL PRIMA JAMBI
-    </span>
-    <span class:list={["mt-1.5 flex items-center gap-2 whitespace-nowrap", light ? "text-white/70" : ""]}>
-      <span class="w-1 h-1 rotate-45 bg-[#c9a227] flex-shrink-0"></span>
-      <span
-        class:list={[
-          "font-script leading-none text-[13px] sm:text-[15px]",
-          light ? "text-[#d9bd6a]" : "text-[#8a6d1f]",
-        ]}
-      >
-        Kesehatan Anda adalah Kebanggaan Kami
+{
+  light ? (
+    <a href="/" class="group inline-flex flex-col leading-none">
+      <span class="font-serif font-extrabold tracking-wide text-white text-[15px] whitespace-nowrap">
+        RS. ROYAL PRIMA JAMBI
       </span>
-      <span class="w-1 h-1 rotate-45 bg-[#c9a227] flex-shrink-0"></span>
-    </span>
-  </div>
-</a>
+      <span class="mt-1.5 flex items-center gap-2 whitespace-nowrap">
+        <span class="w-1 h-1 rotate-45 bg-[#d9bd6a] flex-shrink-0" />
+        <span class="font-script text-[#d9bd6a] text-[14px] leading-none">
+          Kesembuhan Anda adalah Kebanggaan Kami
+        </span>
+        <span class="w-1 h-1 rotate-45 bg-[#d9bd6a] flex-shrink-0" />
+      </span>
+    </a>
+  ) : (
+    <a href="/" class="group inline-flex">
+      <img
+        src="/logo-rs.png"
+        alt="RS. Royal Prima Jambi — Kesembuhan Anda adalah Kebanggaan Kami"
+        width="543"
+        height="149"
+        class="h-11 sm:h-[52px] w-auto object-contain group-hover:scale-[1.02] transition-transform"
+      />
+    </a>
+  )
+}

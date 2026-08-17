@@ -127,7 +127,7 @@ const DAY_ORDER = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu
 function dokterJadwal(dokterId: number | null) {
   if (dokterId == null) return [];
   return jadwal
-    .filter((j) => j.dokterid === dokterId && j.status !== false)
+    .filter((j) => j.dokterid === dokterId)
     .sort((a, b) => DAY_ORDER.indexOf(a.hari) - DAY_ORDER.indexOf(b.hari))
     .map((j) => ({ hari: j.hari, jam: `${j.jamMulai.slice(0, 5)}–${j.jamSelesai.slice(0, 5)}` }));
 }
