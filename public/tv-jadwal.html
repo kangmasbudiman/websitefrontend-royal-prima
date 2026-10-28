@@ -312,20 +312,12 @@
     position:absolute; top:50%; transform:translateY(-50%);
     height:42px; border-radius:9px; background:var(--c,#0B5F7A);
     display:flex; align-items:center; justify-content:center;
-    padding:0 10px; min-width:28px;
+    padding:0 8px; min-width:28px;
     box-shadow:0 3px 10px rgba(0,0,0,.18);
   }
   .bar span {
     font-size:18px; font-weight:800; color:#fff; white-space:nowrap;
     font-variant-numeric:tabular-nums; overflow:hidden;
-  }
-  .bar-ext {
-    position:absolute; top:50%; transform:translateY(-50%); z-index:5;
-    font-size:18px; font-weight:800; color:var(--c,#102A38);
-    background:#fff; border:2px solid var(--c,#102A38); border-radius:999px;
-    padding:3px 12px; white-space:nowrap;
-    font-variant-numeric:tabular-nums;
-    box-shadow:0 2px 8px rgba(16,42,56,.08);
   }
   .bar.live::after {
     content:""; position:absolute; inset:-4px; border-radius:12px;
@@ -723,8 +715,8 @@ function renderTimeline() {
     if (s.st === "tidak") {
       track = `<div class="track-bg"></div><div class="track-note">Tidak praktek hari ini</div>`;
     } else {
-      /* label batang: di dalam jika muat; jika pendek → pill di luar dengan
-         posisi yang dipilih otomatis agar tidak pernah menimpa batang/label lain */
+      /* satu batang per sesi, jam SELALU di dalam batang (tanpa label di luar).
+         Batang pendek diberi lebar minimum supaya jam mulainya muat di dalam. */
       const bars = d.sesi.map(ses => {
         const m0 = Math.max(ses.m, H_START), m1 = Math.min(ses.e, H_END);
         if (m1 <= H_START || m0 >= H_END) return null;
@@ -732,38 +724,19 @@ function renderTimeline() {
         return { m0, m1, left, width, isLive: s.st === "sedang" && s.live && s.live.m === ses.m };
       }).filter(Boolean).sort((a, b) => a.left - b.left);
 
-      const pillW = (txt) => (txt.length * 9.8 + 24) / TRACK_PX * 100; /* perkiraan lebar pill dalam % track */
-      const GAP = 1.6;
-      const occupied = bars.map(b => [b.left, b.left + b.width]);
-      const fits = (a, b) => a >= 0 && b <= 100 && !occupied.some(o => a < o[1] - .4 && b > o[0] + .4);
-
-      track = `<div class="track-bg"></div>` + bars.map(b => {
+      track = `<div class="track-bg"></div>` + bars.map((b, i) => {
         const widthPx = b.width / 100 * TRACK_PX;
-        const fullLbl = `${fmt(b.m0)}–${fmt(b.m1)}`;
-        const inner = widthPx >= 140 ? fullLbl : widthPx >= 76 ? fmt(b.m0) : "";
-        let ext = "";
-        if (!inner) {
-          const wFull = pillW(fullLbl), wStart = pillW(fmt(b.m0));
-          const cands = [
-            { a: b.left + b.width + GAP, w: wFull, txt: fullLbl, after: true },   /* kanan batang */
-            { a: b.left - GAP - wFull, w: wFull, txt: fullLbl },                 /* kiri batang */
-            { a: b.left + b.width + GAP, w: wStart, txt: fmt(b.m0), after: true }/* kanan, mulai saja */
-          ];
-          let pick = cands.find(c => fits(c.a, c.a + c.w));
-          if (!pick) {
-            /* upaya terakhir: pill mulai-saja dijepit agar tetap di dalam kotak
-               (boleh menumpuk ujung batangnya sendiri — pill putih tetap terbaca) */
-            const a = Math.min(Math.max(b.left + b.width + GAP, 0), 100 - wStart);
-            pick = { a, w: wStart, txt: fmt(b.m0), after: true };
-          }
-          occupied.push([pick.a, pick.a + pick.w]);
-          ext = pick.after
-            ? `<span class="bar-ext" style="left:${pick.a}%;--c:${d.c}">${pick.txt}</span>`
-            : `<span class="bar-ext" style="right:${(100 - b.left + GAP).toFixed(2)}%;--c:${d.c}">${pick.txt}</span>`;
-        }
-        return `<div class="bar ${b.isLive?"live":""}" style="--c:${d.c};left:${b.left}%;width:${b.width}%">
+        /* ruang bebas sampai sesi berikutnya agar batang yang diperlebar tidak menimpa batang lain */
+        const nextLeft = i + 1 < bars.length ? bars[i + 1].left : 100;
+        const roomPx = (nextLeft - b.left) / 100 * TRACK_PX;
+        const inner = widthPx >= 140 ? `${fmt(b.m0)}–${fmt(b.m1)}`
+                    : (roomPx >= 70 || i === bars.length - 1) ? fmt(b.m0) : "";
+        const minW = inner && widthPx < 140 ? 68 : 0;
+        /* batang yang diperlebar dijepit agar tidak keluar kotak di ujung kanan */
+        const left = minW ? Math.min(b.left, 100 - (minW / TRACK_PX) * 100) : b.left;
+        return `<div class="bar ${b.isLive?"live":""}" style="--c:${d.c};left:${left}%;width:${b.width}%;${minW ? "min-width:68px;" : ""}">
                   ${inner ? `<span>${inner}</span>` : ""}
-                </div>${ext}`;
+                </div>`;
       }).join("");
     }
 
