@@ -267,7 +267,7 @@
   .row { transition: background-color .6s ease, box-shadow .6s ease, opacity .6s ease; }
   .tl-now .line, .tl-now .pill { transition: left 1s linear; }
   .spot, .row, .bar { will-change: opacity, transform; }
-  .row-l { display:flex; align-items:center; gap:15px; padding-left:8px; min-width:0; }
+  .row-l { display:flex; align-items:center; gap:14px; padding-left:8px; padding-right:14px; min-width:0; }
   .row-ava {
     width:58px; height:58px; border-radius:50%; overflow:hidden; flex:0 0 58px;
     border:4px solid var(--c,#0B5F7A); background:var(--cd,#0B5F7A);
@@ -277,12 +277,12 @@
   .row-ava svg { width:100%; height:100%; display:block; }
   .row-txt { min-width:0; }
   .row-nm {
-    font-size:25px; font-weight:800; color:#102A38; line-height:1.14;
+    font-size:24px; font-weight:800; color:#102A38; line-height:1.14;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
   .row-sub {
-    margin-top:1px; display:flex; align-items:center; gap:8px;
-    font-size:19px; font-weight:600; color:#5A6B87;
+    margin-top:2px; display:flex; align-items:center; gap:8px;
+    font-size:18px; font-weight:600; color:#5A6B87;
     white-space:nowrap; overflow:hidden;
   }
   .row-sub .dot { width:13px; height:13px; border-radius:50%; flex:0 0 13px; }
@@ -524,7 +524,21 @@ function cleanNama(raw) {
     .trim();
 }
 
-/* Label baris "Spesialis · Poli/Ruangan" tanpa pengulangan */
+/* Nama pendek utk baris timeline: buang gelar terakhir selama masih kepanjangan */
+function shortName(raw) {
+  let s = cleanNama(raw);
+  let guard = 0;
+  while (s.length > 20 && s.includes(",") && guard++ < 3) s = s.replace(/,\s*[^,]+$/, "");
+  return s;
+}
+
+/* Label baris "Spesialis · Poli/Ruangan" tanpa pengulangan (termasuk sinonim, mis. Saraf ≈ Syaraf) */
+const _skel = (w) => w.toLowerCase().replace(/[^a-z]/g, "").replace(/[aeiouy]/g, "");
+const _words = (s) => s.toLowerCase().split(/[^a-z]+/).filter(Boolean);
+function _fuzzySame(a, b) {
+  const A = _skel(a), B = _skel(b);
+  return A === B || (A.length > 2 && B.length > 2 && (A.includes(B) || B.includes(A)));
+}
 function subLabel(d) {
   const sp = (d.spesialis || "").trim();
   const po = (d.poli || "").trim();
@@ -532,8 +546,14 @@ function subLabel(d) {
   const spl = sp.toLowerCase(), plo = po.toLowerCase();
   let main = sp;
   if (po && plo !== spl) {
-    if (plo.startsWith(spl)) main = po;          // poli lebih detail → pakai poli
-    else if (!spl.startsWith(plo)) main = `${sp} · ${po}`;
+    const related = _words(po).some(pw => _words(sp).some(sw => _fuzzySame(sw, pw)));
+    if (related) {
+      if (plo.length > spl.length) main = po;   // poli = penjabaran spesialis → pakai yg lebih jelas
+    } else if (plo.startsWith(spl)) {
+      main = po;
+    } else {
+      main = `${sp} · ${po}`;
+    }
   }
   if (lo && !main.toLowerCase().includes(lo.toLowerCase())) main += ` · ${lo}`;
   return main || "—";
@@ -548,6 +568,7 @@ function normalize(list) {
     return {
       id: i,
       nama: cleanNama(d.nama) || "—",
+      namaShort: shortName(d.nama) || "—",
       spesialis: d.spesialis || "—",
       poli: d.poli || "Poli Umum",
       lok: d.lok || "",
@@ -681,10 +702,9 @@ function renderTimeline() {
        <span class="tl-dots">${state.pages.map((_,i) => `<i class="${i===state.pageIdx?"on":""}"></i>`).join("")}</span>`
     : "";
 
-  /* label sumbu 07.00 – 21.00 tiap 2 jam (ujung lengkap, tengah angka jam agar tak bertabrakan) */
-  let axis = `<span style="left:0">07.00</span>`;
-  for (let i = 1; i < 7; i++) axis += `<span style="left:${(i/7)*100}%">${String(7 + i*2).padStart(2,"0")}</span>`;
-  axis += `<span style="left:100%">21.00</span>`;
+  /* label sumbu 07 – 21 tiap 2 jam (angka jam saja agar tidak pernah bertumpuk) */
+  let axis = "";
+  for (let i = 0; i <= 7; i++) axis += `<span style="left:${(i/7)*100}%">${String(7 + i*2).padStart(2,"0")}</span>`;
 
   /* garis bantu vertikal */
   let grid = "";
@@ -723,7 +743,7 @@ function renderTimeline() {
               <div class="row-l">
                 ${photoEl(d,"row-ava")}
                 <div class="row-txt">
-                  <div class="row-nm">${d.nama}</div>
+                  <div class="row-nm">${d.namaShort}</div>
                   <div class="row-sub"><span class="dot ${s.st}"></span><span class="txt">${subLabel(d)}</span></div>
                 </div>
               </div>
@@ -732,10 +752,11 @@ function renderTimeline() {
             </div>`;
   }).join("");
 
-  /* garis "sekarang" */
+  /* garis "sekarang" — pill tetap di dalam kotak walau jam di luar 07.00–21.00 */
   const nowPct = Math.min(Math.max((nowMin - H_START) / SPAN, 0), 1) * 100;
+  const pillAlign = nowPct <= 4 ? "translateX(0)" : nowPct >= 96 ? "translateX(-100%)" : "translateX(-50%)";
   const nowHTML = `<div class="tl-now">
-      <span class="pill" style="left:${nowPct}%">${fmt(nowMin)}</span>
+      <span class="pill" style="left:${nowPct}%;transform:${pillAlign}">${fmt(nowMin)}</span>
       <span class="line" style="left:${nowPct}%"></span>
     </div>`;
 
@@ -809,8 +830,9 @@ function updateNowLine() {
   const pct = Math.min(Math.max((nowMin - H_START) / SPAN, 0), 1) * 100;
   const line = document.querySelector(".tl-now .line");
   const pill = document.querySelector(".tl-now .pill");
+  const align = pct <= 4 ? "translateX(0)" : pct >= 96 ? "translateX(-100%)" : "translateX(-50%)";
   if (line) line.style.left = pct + "%";
-  if (pill) { pill.style.left = pct + "%"; pill.textContent = fmt(nowMin); }
+  if (pill) { pill.style.left = pct + "%"; pill.style.transform = align; pill.textContent = fmt(nowMin); }
 }
 
 /* Sinkronkan highlight baris mengikuti dokter sorotan tanpa rebuild (transisi CSS bekerja) */
