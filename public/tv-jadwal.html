@@ -319,6 +319,9 @@
     font-size:18px; font-weight:800; color:#fff; white-space:nowrap;
     font-variant-numeric:tabular-nums; overflow:hidden;
   }
+  /* batang pendek: jam mulai & selesai ditumpuk di dalam batang */
+  .bar.two { flex-direction:column; gap:0; line-height:1.06; letter-spacing:.2px; }
+  .bar.two span:last-child { opacity:.88; }
   .bar.live::after {
     content:""; position:absolute; inset:-4px; border-radius:12px;
     border:2px solid var(--c); opacity:.55; animation:blink 2s ease-in-out infinite;
@@ -729,13 +732,25 @@ function renderTimeline() {
         /* ruang bebas sampai sesi berikutnya agar batang yang diperlebar tidak menimpa batang lain */
         const nextLeft = i + 1 < bars.length ? bars[i + 1].left : 100;
         const roomPx = (nextLeft - b.left) / 100 * TRACK_PX;
-        const inner = widthPx >= 140 ? `${fmt(b.m0)}–${fmt(b.m1)}`
-                    : (roomPx >= 70 || i === bars.length - 1) ? fmt(b.m0) : "";
-        const minW = inner && widthPx < 140 ? 68 : 0;
+        const isLast = i === bars.length - 1;
+        const full = `${fmt(b.m0)}–${fmt(b.m1)}`;
+        const start = fmt(b.m0), end = `–${fmt(b.m1)}`;
+        let inner = "", minW = 0, two = false;
+        if (widthPx >= 128) {
+          /* batang lebar: satu baris penuh */
+          inner = `<span>${full}</span>`;
+        } else if (roomPx >= 86 || isLast) {
+          /* batang pendek: dua baris di dalam batang — mulai di atas, selesai di bawah */
+          inner = `<span>${start}</span><span>${end}</span>`;
+          minW = 84; two = true;
+        } else if (roomPx >= 70) {
+          /* sempit (ada sesi berikutnya berdekatan): jam mulai saja */
+          inner = `<span>${start}</span>`; minW = 68;
+        }
         /* batang yang diperlebar dijepit agar tidak keluar kotak di ujung kanan */
         const left = minW ? Math.min(b.left, 100 - (minW / TRACK_PX) * 100) : b.left;
-        return `<div class="bar ${b.isLive?"live":""}" style="--c:${d.c};left:${left}%;width:${b.width}%;${minW ? "min-width:68px;" : ""}">
-                  ${inner ? `<span>${inner}</span>` : ""}
+        return `<div class="bar ${two?"two ":""}${b.isLive?"live":""}" style="--c:${d.c};left:${left}%;width:${b.width}%;${minW ? `min-width:${minW}px;` : ""}">
+                  ${inner}
                 </div>`;
       }).join("");
     }
