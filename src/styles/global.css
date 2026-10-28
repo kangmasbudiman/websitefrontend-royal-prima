@@ -224,6 +224,13 @@
 .animate-marquee { animation: marquee 40s linear infinite; }
 .animate-marquee:hover { animation-play-state: paused; }
 
+/* Transisi lembut konten jadwal dokter saat berganti hari */
+@keyframes jdIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+.jd-in { animation: jdIn .55s cubic-bezier(.22,1,.36,1) both; }
+
 @keyframes fadeCross {
   0%, 35% { opacity: 1; }
   45%, 90% { opacity: 0; }

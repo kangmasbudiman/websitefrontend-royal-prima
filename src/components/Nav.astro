@@ -16,6 +16,8 @@ const NAV = [
   { href: "/#tentang", label: "Tentang" },
   { href: "/#poliklinik", label: "Poliklinik" },
   { href: "/#dokter", label: "Dokter" },
+  { href: "/jadwal-dokter", label: "Jadwal Dokter" },
+  { href: "/tv-jadwal.html", label: "Layar Lobi", blank: true },
   { href: "/#fasilitas", label: "Fasilitas" },
   { href: "/#berita", label: "Berita" },
   { href: kontakHref, label: "Kontak", wa: true },
@@ -30,8 +32,8 @@ const NAV = [
       {NAV.map((l) => (
         <a
           href={l.href}
-          target={l.wa ? "_blank" : undefined}
-          rel={l.wa ? "noreferrer" : undefined}
+          target={l.wa || l.blank ? "_blank" : undefined}
+          rel={l.wa || l.blank ? "noreferrer" : undefined}
           class="hover:text-prima transition inline-flex items-center gap-1"
         >
           {l.wa && (
@@ -74,8 +76,8 @@ const NAV = [
         <a
           href={l.href}
           data-nav-link
-          target={l.wa ? "_blank" : undefined}
-          rel={l.wa ? "noreferrer" : undefined}
+          target={l.wa || l.blank ? "_blank" : undefined}
+          rel={l.wa || l.blank ? "noreferrer" : undefined}
           class="py-2 px-2 rounded hover:bg-canvas"
         >
           {l.label}

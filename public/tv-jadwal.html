@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1920, initial-scale=1" />
+<title>Jadwal Dokter — Monitor Lobi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Great+Vibes&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     MONITOR TV LOBI — 1920x1080 (Full HD), mode kiosk
+     ============================================================ */
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body {
+    width:100%; height:100%; overflow:hidden;
+    background:#04141E; cursor:none;
+    font-family:'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  }
+  img { -webkit-user-drag:none; user-select:none; }
+
+  /* Panggung 1920x1080 yang otomatis di-scale agar pas di layar apa pun */
+  #stage {
+    position:absolute; top:50%; left:50%;
+    width:1920px; height:1080px;
+    transform-origin:center;
+    display:flex; flex-direction:column;
+    background:#08202D; color:#fff; overflow:hidden;
+  }
+
+  /* Ornamen tanda plus transparan */
+  .plus {
+    position:absolute; font-weight:800; line-height:1;
+    color:rgba(255,255,255,.055); user-select:none; pointer-events:none;
+  }
+  .plus.gold { color:rgba(245,184,61,.10); }
+
+  /* ============ HEADER (96px) ============ */
+  .hd {
+    height:96px; flex:0 0 96px;
+    background:
+      radial-gradient(640px 220px at 5% 55%, rgba(245,184,61,.12), transparent 62%),
+      radial-gradient(520px 200px at 96% 20%, rgba(255,255,255,.08), transparent 60%),
+      linear-gradient(100deg,#073F53 0%,#0B5F7A 45%,#0E7396 100%);
+    border-bottom:4px solid #F5B83D;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 40px; position:relative; overflow:hidden;
+  }
+  /* kilau lembut menyapu header tiap beberapa detik */
+  .hd::after {
+    content:""; position:absolute; top:0; bottom:0; width:300px; left:-320px;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.075),transparent);
+    animation:sheen 9s ease-in-out infinite; pointer-events:none;
+  }
+  @keyframes sheen { 0% { left:-320px; } 42% { left:105%; } 100% { left:105%; } }
+
+  .hd-left { display:flex; align-items:center; gap:20px; position:relative; z-index:2; }
+  /* Perisai transparan + glow lembut di belakangnya (tanpa kotak putih) */
+  .hd-logo {
+    width:64px; height:74px; position:relative; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .hd-logo::before {
+    content:""; position:absolute; inset:-16px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.17), transparent 64%);
+  }
+  .hd-logo img {
+    height:70px; width:auto; position:relative;
+    filter:drop-shadow(0 6px 12px rgba(0,0,0,.38));
+  }
+  /* garis emas pemisah logo ↔ teks */
+  .hd-sep {
+    width:2px; height:54px; flex:0 0 2px; opacity:.75;
+    background:linear-gradient(180deg,transparent,#F5B83D 28%,#F5B83D 72%,transparent);
+  }
+  .hd-titleblock { min-width:0; }
+  .hd-title {
+    font-family:'Fraunces', Georgia, serif;
+    font-size:32px; font-weight:700; letter-spacing:.09em;
+    color:#fff; white-space:nowrap; line-height:1.1;
+  }
+  .hd-tagline {
+    font-family:'Great Vibes', cursive;
+    font-size:27px; line-height:1.15; color:#F5B83D;
+    white-space:nowrap; margin-top:1px;
+  }
+  .hd-right { text-align:right; position:relative; z-index:2; }
+  .hd-date { font-size:20px; font-weight:600; color:rgba(255,255,255,.88); letter-spacing:.02em; }
+  .hd-clock {
+    font-size:50px; font-weight:800; line-height:1.08;
+    letter-spacing:1px; font-variant-numeric:tabular-nums;
+  }
+  .hd-clock .sec { font-size:25px; font-weight:700; color:#F5B83D; margin-left:4px; }
+
+  /* ============ KONTEN ============ */
+  .main {
+    flex:1; min-height:0;
+    display:grid; grid-template-columns:900px 1fr; gap:24px;
+    padding:24px 40px; position:relative;
+  }
+
+  /* ---------- PANEL KIRI : DOKTER SOROTAN ---------- */
+  .spot {
+    position:relative; border-radius:24px; overflow:hidden;
+    padding:36px 40px; height:100%;
+    display:flex; flex-direction:column;
+    background:var(--c,#0B5F7A);
+    box-shadow:0 18px 50px rgba(0,0,0,.45);
+  }
+  .spot.pair { background:#0A2C3D; padding:24px 24px 28px; }
+  .spot-in { display:flex; flex-direction:column; height:100%; min-height:0; flex:1; position:relative; }
+  .spot-top { display:flex; align-items:center; justify-content:space-between; gap:16px; position:relative; z-index:2; }
+  .spot-label {
+    font-size:20px; font-weight:800; letter-spacing:4px; text-transform:uppercase;
+    color:rgba(255,255,255,.92); display:flex; align-items:center; gap:12px;
+  }
+  .spot-label::before { content:""; width:34px; height:3px; background:#F5B83D; border-radius:2px; }
+  .spot-badge {
+    display:inline-flex; align-items:center; gap:10px;
+    padding:9px 20px; border-radius:999px;
+    background:rgba(255,255,255,.18); backdrop-filter:blur(4px);
+    font-size:19px; font-weight:800; letter-spacing:1.5px; white-space:nowrap;
+  }
+  .spot-badge .dot { width:14px; height:14px; border-radius:50%; flex:0 0 14px; }
+  .dot.sedang  { background:#4ADE80; animation:blink 2s ease-in-out infinite; }
+  .dot.akan    { background:#FBBF24; }
+  .dot.selesai { background:#CBD5E1; }
+  .dot.tidak   { background:#94A3B8; }
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:.25; } }
+
+  .spot-photo {
+    width:360px; height:360px; border-radius:50%;
+    border:10px solid rgba(255,255,255,.92);
+    box-shadow:0 22px 45px rgba(0,0,0,.4);
+    overflow:hidden; flex:0 0 auto; background:var(--cd,#0B5F7A);
+    margin:26px auto 0; position:relative; z-index:2;
+  }
+  .spot-photo img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
+  .spot-photo svg { width:100%; height:100%; display:block; }
+  .spot-nm {
+    margin-top:26px; font-size:62px; font-weight:800; line-height:1.08;
+    text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    position:relative; z-index:2;
+  }
+  .spot-spec {
+    margin-top:6px; font-size:37px; font-weight:700; text-align:center;
+    color:rgba(255,255,255,.95); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    position:relative; z-index:2;
+  }
+  .spot-poli {
+    margin-top:4px; font-size:28px; font-weight:600; text-align:center;
+    color:rgba(255,255,255,.82); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    position:relative; z-index:2;
+  }
+  .spot-jambox {
+    margin-top:auto; background:#fff; border-radius:22px;
+    padding:18px 30px 22px; text-align:center;
+    box-shadow:0 14px 34px rgba(0,0,0,.28); position:relative; z-index:2;
+  }
+  .spot-jamlabel {
+    font-size:18px; font-weight:800; letter-spacing:3px;
+    color:#8195A3; text-transform:uppercase;
+  }
+  .spot-jam {
+    font-size:82px; font-weight:800; line-height:1.04; color:var(--c,#0B5F7A);
+    font-variant-numeric:tabular-nums; letter-spacing:1px;
+  }
+  .spot-jam.small { font-size:50px; }
+  .spot-jam.tiny  { font-size:40px; }
+  .spot-jam .sep { color:#B9C6CF; font-weight:600; }
+
+  /* Mode berpasangan (dua kartu berdampingan) */
+  .pair-grid {
+    flex:1; display:grid; grid-template-columns:1fr 1fr; gap:20px;
+    margin-top:18px; min-height:0;
+  }
+  .pair-card {
+    border-radius:20px; padding:24px 22px 22px; overflow:hidden;
+    display:flex; flex-direction:column; align-items:center; text-align:center;
+    background:var(--c,#0B5F7A); position:relative;
+  }
+  .pair-photo {
+    width:200px; height:200px; border-radius:50%;
+    border:8px solid rgba(255,255,255,.92); overflow:hidden;
+    box-shadow:0 14px 30px rgba(0,0,0,.35); flex:0 0 auto; background:var(--cd,#0B5F7A);
+  }
+  .pair-photo img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
+  .pair-photo svg { width:100%; height:100%; display:block; }
+  .pair-nm {
+    margin-top:16px; font-size:44px; font-weight:800; line-height:1.1;
+    max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .pair-spec {
+    margin-top:4px; font-size:26px; font-weight:700; color:rgba(255,255,255,.95);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
+  }
+  .pair-poli {
+    margin-top:3px; font-size:22px; font-weight:600; color:rgba(255,255,255,.82);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;
+  }
+  .pair-jambox {
+    margin-top:auto; background:#fff; border-radius:16px;
+    padding:12px 18px 14px; width:100%; text-align:center;
+    box-shadow:0 10px 24px rgba(0,0,0,.25);
+  }
+  .pair-jam { font-size:50px; font-weight:800; line-height:1.05; color:var(--c,#0B5F7A); font-variant-numeric:tabular-nums; }
+  .pair-jam.small { font-size:38px; }
+  .pair-jamlabel { font-size:18px; font-weight:800; letter-spacing:2.5px; color:#8195A3; text-transform:uppercase; }
+
+  .spot-empty {
+    margin:auto; text-align:center; font-size:28px; font-weight:700;
+    color:rgba(255,255,255,.85); position:relative; z-index:2;
+  }
+
+  /* ---------- PANEL KANAN : JADWAL HARI INI ---------- */
+  .tl {
+    background:#fff; color:#102A38; border-radius:24px;
+    padding:22px 0 18px; height:100%;
+    display:flex; flex-direction:column; overflow:hidden;
+    box-shadow:0 18px 50px rgba(0,0,0,.45);
+  }
+  .tl-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 32px; flex:0 0 auto;
+  }
+  .tl-title { font-size:31px; font-weight:800; letter-spacing:.5px; display:flex; align-items:center; gap:14px; }
+  .tl-title::before { content:""; width:10px; height:28px; background:#0B5F7A; border-radius:3px; }
+  .tl-date { font-size:19px; font-weight:600; color:#5A6B87; margin-top:2px; margin-left:24px; }
+  .tl-pageinfo { display:flex; align-items:center; gap:14px; }
+  .tl-pagechip {
+    font-size:18px; font-weight:800; color:#0B5F7A;
+    background:#E7F1F8; border-radius:999px; padding:7px 18px; white-space:nowrap;
+  }
+  .tl-dots { display:flex; gap:7px; }
+  .tl-dots i { width:9px; height:9px; border-radius:50%; background:#C7D6E2; }
+  .tl-dots i.on { background:#F5B83D; }
+
+  .tl-body { flex:1; min-height:0; position:relative; margin:8px 32px 0; }
+
+  /* Sumbu waktu (label tiap 2 jam) — sejajar dengan area track */
+  .tl-axis { position:absolute; left:340px; right:140px; top:0; height:56px; }
+  .tl-axis span {
+    position:absolute; top:28px; transform:translateX(-50%);
+    font-size:18px; font-weight:700; color:#7B8DA3; font-variant-numeric:tabular-nums;
+  }
+  .tl-axis span:first-child { transform:none; }
+  .tl-axis span:last-child  { transform:translateX(-100%); }
+
+  /* Garis bantu vertikal tipis */
+  .tl-grid { position:absolute; left:340px; right:140px; top:56px; bottom:6px; }
+  .tl-grid i {
+    position:absolute; top:0; bottom:0; width:1px;
+    background:rgba(16,42,56,.08);
+  }
+
+  /* Baris dokter */
+  .tl-rows { position:absolute; left:0; right:0; top:56px; bottom:6px; display:flex; flex-direction:column; gap:10px; }
+  .row {
+    flex:0 0 auto; height:calc((100% - 70px) / 8); min-height:0;
+    display:grid; grid-template-columns:340px 1fr; align-items:center;
+    border-radius:14px; position:relative;
+  }
+  .row.spot-row { background:var(--ct,rgba(11,95,122,.10)); box-shadow:inset 4px 0 0 var(--c,#0B5F7A); }
+  .row.faded { opacity:.42; }
+
+  /* Transisi halus */
+  .row { transition: background-color .6s ease, box-shadow .6s ease, opacity .6s ease; }
+  .tl-now .line, .tl-now .pill { transition: left 1s linear; }
+  .spot, .row, .bar { will-change: opacity, transform; }
+  .row-l { display:flex; align-items:center; gap:15px; padding-left:8px; min-width:0; }
+  .row-ava {
+    width:58px; height:58px; border-radius:50%; overflow:hidden; flex:0 0 58px;
+    border:4px solid var(--c,#0B5F7A); background:var(--cd,#0B5F7A);
+    box-shadow:0 3px 9px rgba(0,0,0,.22);
+  }
+  .row-ava img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
+  .row-ava svg { width:100%; height:100%; display:block; }
+  .row-txt { min-width:0; }
+  .row-nm {
+    font-size:25px; font-weight:800; color:#102A38; line-height:1.14;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .row-sub {
+    margin-top:1px; display:flex; align-items:center; gap:8px;
+    font-size:19px; font-weight:600; color:#5A6B87;
+    white-space:nowrap; overflow:hidden;
+  }
+  .row-sub .dot { width:13px; height:13px; border-radius:50%; flex:0 0 13px; }
+  .row-sub .txt { overflow:hidden; text-overflow:ellipsis; }
+  .row-status {
+    position:absolute; right:10px; top:6px;
+    font-size:17px; font-weight:800; letter-spacing:.6px;
+    padding:4px 14px; border-radius:999px; white-space:nowrap; z-index:3;
+  }
+  .st-sedang  { background:#DDF5E7; color:#0B7A3E; }
+  .st-akan    { background:#FDF3D0; color:#8A5A00; }
+  .st-selesai { background:#EDF1F5; color:#64748B; }
+  .st-tidak   { background:#F1F4F7; color:#94A3B8; }
+
+  /* Track + batang jam */
+  .row-track { position:relative; height:100%; margin-right:140px; }
+  .track-bg {
+    position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); height:64px;
+    background:#F2F7FA; border-radius:10px;
+  }
+  .row.faded .track-note {
+    position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); height:64px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:19px; font-weight:700; color:#9AABBC; font-style:italic;
+  }
+  .bar {
+    position:absolute; top:50%; transform:translateY(-50%);
+    height:42px; border-radius:9px; background:var(--c,#0B5F7A);
+    display:flex; align-items:center; justify-content:center;
+    padding:0 12px; min-width:52px;
+    box-shadow:0 3px 10px rgba(0,0,0,.18);
+  }
+  .bar span {
+    font-size:18px; font-weight:800; color:#fff; white-space:nowrap;
+    font-variant-numeric:tabular-nums; overflow:hidden;
+  }
+  .bar-ext {
+    position:absolute; top:50%; transform:translateY(-50%);
+    font-size:18px; font-weight:800; color:#102A38; white-space:nowrap;
+    font-variant-numeric:tabular-nums;
+  }
+  .bar.live::after {
+    content:""; position:absolute; inset:-4px; border-radius:12px;
+    border:2px solid var(--c); opacity:.55; animation:blink 2s ease-in-out infinite;
+  }
+
+  /* Garis "sekarang" (emas) — sejajar dengan area track */
+  .tl-now { position:absolute; left:300px; right:150px; top:0; bottom:0; pointer-events:none; z-index:4; }
+  .tl-now .line { position:absolute; top:30px; bottom:0; width:3px; background:#F5B83D; border-radius:2px; transform:translateX(-50%); box-shadow:0 0 10px rgba(245,184,61,.55); }
+  .tl-now .pill {
+    position:absolute; top:0; transform:translateX(-50%);
+    background:#F5B83D; color:#08202D; font-size:17px; font-weight:800;
+    padding:3px 13px; border-radius:999px; font-variant-numeric:tabular-nums;
+    box-shadow:0 4px 12px rgba(0,0,0,.3);
+  }
+
+  /* ============ FOOTER (56px) ============ */
+  .ft {
+    height:56px; flex:0 0 56px;
+    background:#0B3242; border-top:3px solid #F5B83D;
+    display:flex; align-items:center; overflow:hidden; position:relative;
+  }
+  .mq { display:flex; white-space:nowrap; animation:mq 32s linear infinite; will-change:transform; }
+  .mq-set { display:flex; align-items:center; }
+  .mq-set span { font-size:21px; font-weight:600; color:#D7E9F2; }
+  .mq-set b { color:#F5B83D; font-weight:800; }
+  .mq-set .dia { margin:0 34px; color:#F5B83D; font-size:17px; }
+  @keyframes mq { from { transform:translateX(0); } to { transform:translateX(-33.3333%); } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- HEADER -->
+  <header class="hd">
+    <span class="plus" style="top:-16px;left:42%;font-size:110px;transform:rotate(14deg)">+</span>
+    <span class="plus gold" style="bottom:-34px;left:55%;font-size:150px;transform:rotate(-10deg)">+</span>
+    <span class="plus" style="top:-8px;right:30%;font-size:80px;transform:rotate(-14deg)">+</span>
+    <div class="hd-left">
+      <div class="hd-logo"><img src="/logo-shield.png" alt="Logo RS Royal Prima Jambi" /></div>
+      <div class="hd-sep"></div>
+      <div class="hd-titleblock">
+        <div class="hd-title" id="hdName">RS. ROYAL PRIMA JAMBI</div>
+        <div class="hd-tagline">Kesembuhan Anda adalah Kebanggaan Kami</div>
+      </div>
+    </div>
+    <div class="hd-right">
+      <div class="hd-date" id="hdDate">—</div>
+      <div class="hd-clock"><span id="clk">--:--</span><span class="sec" id="clkSec"></span></div>
+    </div>
+  </header>
+
+  <!-- KONTEN -->
+  <main class="main">
+    <section class="spot" id="spot"></section>
+    <section class="tl">
+      <div class="tl-head">
+        <div>
+          <div class="tl-title">JADWAL HARI INI</div>
+          <div class="tl-date" id="tlDate">—</div>
+        </div>
+        <div class="tl-pageinfo" id="tlPage"></div>
+      </div>
+      <div class="tl-body" id="tlBody"></div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="ft"><div class="mq" id="mq"></div></footer>
+</div>
+
+<script>
+/* ============================================================
+   KONFIGURASI
+   ============================================================ */
+const CONFIG = {
+  HOSPITAL_NAME : "RS. Royal Prima Jambi",
+  SUBTITLE      : "Kesembuhan Anda adalah Kebanggaan Kami",
+  PHONE         : "[NOMOR TELEPON]",
+
+  /* Sumber data: "sample" | "supabase" | "url" */
+  DATA_MODE     : "supabase",
+
+  /* Mode "url" : endpoint JSON yang mengembalikan array dokter
+     [{ nama, spesialis, poli, foto, cuti, sesi: [["08:00","12:00"], ...] }] */
+  DATA_URL      : "",
+
+  /* Mode "supabase" : baca tabel dokter + jadwal (hari ini) langsung.
+     Isi sesuai proyek RS Anda; kunci anon bersifat publik (RLS tetap berlaku). */
+  SUPABASE_URL  : "https://tsavaawnubadqgzcqakd.supabase.co",
+  SUPABASE_KEY  : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzYXZhYXdudWJhZHFnemNxYWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzE3NTg3MTIsImV4cCI6MjA0NzMzNDcxMn0.-kYoOJgDBNfoQIds-FAyo3PtKXKP_fMbhld8BYzTzt0",
+
+  REFRESH_MS    : 5 * 60 * 1000,  // baca ulang data tiap 5 menit
+  SPOT_MS       : 8000,           // ganti dokter sorotan tiap 8 detik
+  PAGE_MS       : 12000,          // ganti halaman timeline tiap 12 detik
+};
+
+/* Data contoh (dipakai sampai data asli tersedia).
+   sesi = [jam mulai, jam selesai], boleh lebih dari satu. cuti = true → tidak praktek. */
+const SAMPLE_DATA = [
+  { nama:"dr. Andini Prameswari, Sp.A",              spesialis:"Spesialis Anak",           poli:"Poli Anak",           foto:null, sesi:[["08:00","12:00"]] },
+  { nama:"dr. Hendra Wijaya, Sp.A",                  spesialis:"Spesialis Anak",           poli:"Ruang 3",             foto:null, sesi:[["08:00","12:00"]] },
+  { nama:"dr. Budi Hartono, Sp.PD-KHOM",             spesialis:"Penyakit Dalam",           poli:"Poli Penyakit Dalam", foto:null, sesi:[["08:00","14:00"]] },
+  { nama:"dr. Citra Maharani Kusumawardhani, Sp.OG", spesialis:"Obstetri & Ginekologi",    poli:"Poli Kebidanan",      foto:null, sesi:[["08:00","13:00"]] },
+  { nama:"dr. Laila Ramadhani, Sp.KFR",              spesialis:"Rehabilitasi Medik",       poli:"Poli Rehab Medik",    foto:null, sesi:[["09:00","11:00"]] },
+  { nama:"dr. Deddy Kurniawan, Sp.B-KBD",            spesialis:"Bedah Umum",               poli:"Poli Bedah",          foto:null, sesi:[["09:00","12:00"],["16:00","19:00"]] },
+  { nama:"dr. Fajar Nugroho, Sp.THT-KL",             spesialis:"THT - Kepala & Leher",     poli:"Poli THT",            foto:null, sesi:[["10:00","12:00"]] },
+  { nama:"dr. Endah Sulistyorini, Sp.M",             spesialis:"Mata",                     poli:"Poli Mata",           foto:null, sesi:[["13:00","16:00"]] },
+  { nama:"dr. Indra Saputra, Sp.OG",                 spesialis:"Obstetri & Ginekologi",    poli:"Poli Kebidanan",      foto:null, sesi:[["15:00","18:00"]] },
+  { nama:"dr. Joko Prasetyo, Sp.PD-KGEH",            spesialis:"Penyakit Dalam",           poli:"Poli Penyakit Dalam", foto:null, sesi:[["14:00","20:00"]] },
+  { nama:"dr. Gita Larasati, Sp.KK",                 spesialis:"Kulit & Kelamin",          poli:"Poli Kulit",          foto:null, sesi:[["16:00","19:00"]] },
+  { nama:"dr. Kartika Sari, Sp.N",                   spesialis:"Saraf",                    poli:"Poli Saraf",          foto:null, sesi:[["08:00","12:00"]], cuti:true },
+];
+
+/* Warna per spesialis — semua dipilih agar kontras ≥ 4.5:1 dengan teks putih */
+const PALETTE = ["#0B5F7A","#1D4ED8","#A21CAF","#C2410C","#6D28D9","#4338CA","#0E7490","#15803D"];
+
+const H_START = 7 * 60;    // 07.00
+const H_END   = 21 * 60;   // 21.00
+const SPAN    = H_END - H_START;
+/* Lebar nyata area track batang dalam layout 1920px:
+   body kartu 852 − kolom nama 340 − ruang chip status 140 */
+const TRACK_PX = 372;
+
+/* ============================================================ */
+const $ = (s) => document.querySelector(s);
+const stage = $("#stage");
+
+/* Skala otomatis: 1920x1080 → pas di layar mana pun */
+function fit() {
+  const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+  stage.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+window.addEventListener("resize", fit); fit();
+
+/* Mode kiosk: klik sekali → fullscreen */
+const goFull = () => document.documentElement.requestFullscreen?.().catch(() => {});
+document.addEventListener("click", goFull, { once:true });
+document.addEventListener("keydown", goFull, { once:true });
+
+/* ---------- util ---------- */
+function colorFor(spesialis) {
+  let h = 0;
+  for (const ch of String(spesialis || "?")) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return PALETTE[h % PALETTE.length];
+}
+function minutes(t) { const [h, m] = String(t).split(":"); return (+h || 0) * 60 + (+m || 0); }
+function fmt(m) {
+  m = Math.max(0, Math.round(m));
+  return `${String(Math.floor(m / 60)).padStart(2,"0")}.${String(m % 60).padStart(2,"0")}`;
+}
+function parseFoto(raw) {
+  if (!raw) return null;
+  try {
+    const p = JSON.parse(raw);
+    if (Array.isArray(p)) return p.find(Boolean) || null;
+    if (typeof p === "string" && p) return p;
+  } catch { if (typeof raw === "string" && raw.startsWith("http")) return raw; }
+  return null;
+}
+
+/* Siluet placeholder berwarna (jika foto belum ada / gagal dimuat) */
+const SIL = `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+  <rect width="100" height="100" fill="rgba(255,255,255,.14)"/>
+  <circle cx="50" cy="37" r="19" fill="rgba(255,255,255,.90)"/>
+  <path d="M50 61c-21 0-33 13-35 27v12h70v-12c-2-14-14-27-35-27z" fill="rgba(255,255,255,.90)"/>
+</svg>`;
+function photoEl(d, cls) {
+  return d.foto
+    ? `<div class="${cls}"><img src="${d.foto}" alt="" onerror="this.parentElement.innerHTML=SIL"></div>`
+    : `<div class="${cls}">${SIL}</div>`;
+}
+
+/* ---------- status dokter ---------- */
+function statusOf(d, now) {
+  if (d.cuti) return { st:"tidak", label:"Tidak Praktek" };
+  const sesi = d.sesi.filter(s => s.e > s.m);
+  if (!sesi.length) return { st:"tidak", label:"Tidak Praktek" };
+  const live = sesi.find(s => now >= s.m && now < s.e);
+  if (live) return { st:"sedang", label:"Sedang Praktek", live };
+  if (sesi.some(s => s.m > now)) return { st:"akan", label:"Akan Praktek" };
+  return { st:"selesai", label:"Selesai" };
+}
+
+/* ============================================================
+   STATE + RENDER
+   ============================================================ */
+const state = {
+  dokter: [], now: new Date(),
+  spotIdx: 0, spotPool: [], spotBadge: "",
+  pageIdx: 0, pages: [], spotIds: [],
+};
+
+/* Rapikan nama dokter dari database: "dr.Puji Lestari,Sp.M" → "dr. Puji Lestari, Sp.M" */
+function cleanNama(raw) {
+  return String(raw || "")
+    .replace(/^dr\.?\s*/i, "dr. ")
+    .replace(/,([A-Za-z])/g, ", $1")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+/* Label baris "Spesialis · Poli/Ruangan" tanpa pengulangan */
+function subLabel(d) {
+  const sp = (d.spesialis || "").trim();
+  const po = (d.poli || "").trim();
+  const lo = (d.lok || "").trim();
+  const spl = sp.toLowerCase(), plo = po.toLowerCase();
+  let main = sp;
+  if (po && plo !== spl) {
+    if (plo.startsWith(spl)) main = po;          // poli lebih detail → pakai poli
+    else if (!spl.startsWith(plo)) main = `${sp} · ${po}`;
+  }
+  if (lo && !main.toLowerCase().includes(lo.toLowerCase())) main += ` · ${lo}`;
+  return main || "—";
+}
+
+function normalize(list) {
+  return (list || []).map((d, i) => {
+    const sesi = (d.sesi || [])
+      .map(s => ({ m: minutes(s[0]), e: minutes(s[1]) }))
+      .filter(s => s.e > s.m)
+      .sort((a, b) => a.m - b.m);
+    return {
+      id: i,
+      nama: cleanNama(d.nama) || "—",
+      spesialis: d.spesialis || "—",
+      poli: d.poli || "Poli Umum",
+      lok: d.lok || "",
+      foto: d.foto || null,
+      cuti: !!d.cuti,
+      sesi,
+      c: colorFor(d.spesialis),
+      cd: colorFor(d.spesialis),
+    };
+  }).filter(d => d.cuti || d.sesi.length);
+}
+
+/* Urutan baris: mulai praktek paling awal dulu, cuti paling bawah */
+function sortRows(list, now) {
+  const key = (d) => {
+    const s = statusOf(d, now);
+    if (s.st === "tidak") return 9e9;
+    return d.sesi[0]?.m ?? 9e8;
+  };
+  return [...list].sort((a, b) => key(a) - key(b) || a.nama.localeCompare(b.nama));
+}
+
+/* Pool dokter sorotan (tanpa yang cuti/tidak praktek) */
+function buildPool(list, now) {
+  const sedang  = list.filter(d => statusOf(d, now).st === "sedang");
+  const akan    = list.filter(d => statusOf(d, now).st === "akan")
+                      .sort((a, b) => a.sesi[0].m - b.sesi[0].m);
+  const selesai = list.filter(d => statusOf(d, now).st === "selesai");
+  if (sedang.length)  return { pool: sedang,  badge: "SEDANG PRAKTEK" };
+  if (akan.length)    return { pool: akan,    badge: "PRAKTEK BERIKUTNYA" };
+  if (selesai.length) return { pool: selesai, badge: "SELESAI PRAKTEK" };
+  return { pool: [], badge: "" };
+}
+/* Bagi menjadi potongan maks. 2 dokter (berpasangan) */
+function chunk2(arr) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += 2) out.push(arr.slice(i, i + 2));
+  return out;
+}
+
+/* ---------- HEADER / JAM ---------- */
+function renderClock() {
+  state.now = new Date();
+  const n = state.now;
+  $("#hdDate").textContent = new Intl.DateTimeFormat("id-ID",
+    { weekday:"long", day:"numeric", month:"long", year:"numeric" }).format(n);
+  $("#clk").textContent = n.toLocaleTimeString("id-ID", { hour:"2-digit", minute:"2-digit", hourCycle:"h23" });
+  $("#clkSec").textContent = n.toLocaleTimeString("id-ID", { second:"2-digit" }).padStart(2,"0");
+  updateNowLine();
+}
+
+/* ---------- PANEL SOROTAN ---------- */
+function renderSpot() {
+  const el = $("#spot");
+  const pool = state.spotPool;
+  const now = state.now, nowMin = now.getHours() * 60 + now.getMinutes();
+
+  /* ornamen plus */
+  const plus = (top,left,size,rot,gold) =>
+    `<span class="plus ${gold?"gold":""}" style="top:${top};left:${left};font-size:${size}px;transform:rotate(${rot}deg)">+</span>`;
+
+  if (!pool.length) {
+    el.style.setProperty("--c", "#0B5F7A");
+    el.innerHTML = `<div class="spot-in">${plus("-30px","40%",150,15) + plus("70%","-20px",220,-10,true) +
+      `<div class="spot-empty">Belum ada jadwal praktik hari ini</div>`}</div>`;
+    state.spotIds = [];
+    return;
+  }
+
+  const group = pool[state.spotIdx % pool.length] || [];
+  state.spotIds = group.map(d => d.id);
+  const single = group.length === 1;
+
+  if (single) {
+    const d = group[0];
+    const s = statusOf(d, now);
+    const sizeCls = d.sesi.length >= 3 ? "tiny" : d.sesi.length === 2 ? "small" : "";
+    el.style.setProperty("--c", d.c);
+    el.style.setProperty("--cd", d.cd);
+    el.innerHTML = `<div class="spot-in">${plus("-40px","55%",170,18) + plus("62%","-24px",240,-12,true) + plus("70%","80%",120,8) +
+      `<div class="spot-top">
+         <span class="spot-label">Dokter Sorotan</span>
+         <span class="spot-badge"><span class="dot ${s.st}"></span>${state.spotBadge}</span>
+       </div>
+       ${photoEl(d,"spot-photo")}
+       <div class="spot-nm">${d.nama}</div>
+       <div class="spot-spec">${d.spesialis}</div>
+       <div class="spot-poli">${subLabel(d)}</div>
+       <div class="spot-jambox"><div class="spot-jamlabel">Jam Praktek</div><div class="spot-jam ${sizeCls}">${
+         d.sesi.map(s2 => `${fmt(s2.m)} <span class="sep">–</span> ${fmt(s2.e)}`).join("<br>")}</div></div>`}</div>`;
+  } else {
+    el.style.setProperty("--c", "#0A2C3D");
+    el.innerHTML = `<div class="spot-in">${plus("-40px","40%",170,15,true) +
+      `<div class="spot-top">
+         <span class="spot-label">Dokter Sorotan</span>
+         <span class="spot-badge"><span class="dot ${statusOf(group[0],now).st}"></span>${state.spotBadge}</span>
+       </div>
+       <div class="pair-grid">${
+         group.map(d => {
+           const sizeCls = d.sesi.length >= 2 ? "small" : "";
+           return `<div class="pair-card" style="--c:${d.c};--cd:${d.cd}">
+             ${photoEl(d,"pair-photo")}
+             <div class="pair-nm">${d.nama}</div>
+             <div class="pair-spec">${d.spesialis}</div>
+             <div class="pair-poli">${subLabel(d)}</div>
+             <div class="pair-jambox"><div class="spot-jamlabel">Jam Praktek</div>
+               <div class="pair-jam ${sizeCls}">${
+                 d.sesi.map(s2 => `${fmt(s2.m)}–${fmt(s2.e)}`).join("<br>")}</div></div>
+           </div>`;
+         }).join("")
+       }</div>`}</div>`;
+  }
+}
+
+/* ---------- TIMELINE KANAN ---------- */
+function renderTimeline() {
+  const now = state.now, nowMin = now.getHours() * 60 + now.getMinutes();
+  $("#tlDate").textContent = new Intl.DateTimeFormat("id-ID",
+    { weekday:"long", day:"numeric", month:"long", year:"numeric" }).format(now) + " · WIB";
+
+  const rows = sortRows(state.dokter, now);
+  state.pages = [];
+  for (let i = 0; i < rows.length; i += 8) state.pages.push(rows.slice(i, i + 8));
+  if (!state.pages.length) state.pages.push([]);
+  state.pageIdx = Math.min(state.pageIdx, state.pages.length - 1);
+
+  /* chip halaman + titik indikator (sembunyikan jika 1 halaman) */
+  const multi = state.pages.length > 1;
+  $("#tlPage").innerHTML = multi
+    ? `<span class="tl-pagechip">Halaman ${state.pageIdx + 1} / ${state.pages.length}</span>
+       <span class="tl-dots">${state.pages.map((_,i) => `<i class="${i===state.pageIdx?"on":""}"></i>`).join("")}</span>`
+    : "";
+
+  /* label sumbu 07.00 – 21.00 tiap 2 jam (ujung lengkap, tengah angka jam agar tak bertabrakan) */
+  let axis = `<span style="left:0">07.00</span>`;
+  for (let i = 1; i < 7; i++) axis += `<span style="left:${(i/7)*100}%">${String(7 + i*2).padStart(2,"0")}</span>`;
+  axis += `<span style="left:100%">21.00</span>`;
+
+  /* garis bantu vertikal */
+  let grid = "";
+  for (let i = 1; i < 7; i++) grid += `<i style="left:${(i/7)*100}%"></i>`;
+
+  const page = state.pages[state.pageIdx] || [];
+  const rowsHTML = page.map(d => {
+    const s = statusOf(d, now);
+    const spot = state.spotIds.includes(d.id);
+    const pct = (m) => ((Math.min(Math.max(m, H_START), H_END) - H_START) / SPAN) * 100;
+
+    let track = "";
+    if (s.st === "tidak") {
+      track = `<div class="track-bg"></div><div class="track-note">Tidak praktek hari ini</div>`;
+    } else {
+      track = `<div class="track-bg"></div>` + d.sesi.map(ses => {
+        const m0 = Math.max(ses.m, H_START), m1 = Math.min(ses.e, H_END);
+        if (m1 <= H_START || m0 >= H_END) return "";
+        const left = pct(m0), width = Math.max(pct(m1) - left, 3);
+        const widthPx = width / 100 * TRACK_PX;
+        const label = `${fmt(m0)}–${fmt(m1)}`;
+        const isLive = s.st === "sedang" && s.live && s.live.m === ses.m;
+        /* label di dalam batang hanya jika muat; sesi pendek → label di luar batang */
+        const inner = widthPx >= 140 ? label : widthPx >= 82 ? fmt(m0) : "";
+        const extSide = (left + width > 88)
+          ? `right:${(100 - left) + .8}%;`
+          : `left:${left + width + .8}%;`;
+        return `<div class="bar ${isLive?"live":""}" style="--c:${d.c};left:${left}%;width:${width}%">
+                  ${inner ? `<span>${inner}</span>` : ""}
+                </div>${inner ? "" : `<span class="bar-ext" style="${extSide}">${label}</span>`}`;
+      }).join("");
+    }
+
+    return `<div class="row ${s.st==="tidak"?"faded":""} ${spot?"spot-row":""}" data-id="${d.id}"
+              style="--c:${d.c};--cd:${d.cd};--ct:${d.c}1A">
+              <div class="row-l">
+                ${photoEl(d,"row-ava")}
+                <div class="row-txt">
+                  <div class="row-nm">${d.nama}</div>
+                  <div class="row-sub"><span class="dot ${s.st}"></span><span class="txt">${subLabel(d)}</span></div>
+                </div>
+              </div>
+              <div class="row-track">${track}</div>
+              <span class="row-status st-${s.st}">${s.label}</span>
+            </div>`;
+  }).join("");
+
+  /* garis "sekarang" */
+  const nowPct = Math.min(Math.max((nowMin - H_START) / SPAN, 0), 1) * 100;
+  const nowHTML = `<div class="tl-now">
+      <span class="pill" style="left:${nowPct}%">${fmt(nowMin)}</span>
+      <span class="line" style="left:${nowPct}%"></span>
+    </div>`;
+
+  $("#tlBody").innerHTML =
+    `<div class="tl-axis">${axis}</div>
+     <div class="tl-grid">${grid}</div>
+     ${nowHTML}
+     <div class="tl-rows">${rowsHTML}</div>`;
+}
+
+/* ---------- FOOTER ---------- */
+function renderFooter() {
+  const set = `<div class="mq-set">
+      <span>Selamat datang di <b>${CONFIG.HOSPITAL_NAME}</b> — ${CONFIG.SUBTITLE}</span><span class="dia">✦</span>
+      <span>Jadwal dapat berubah sewaktu-waktu, mohon konfirmasi kepada resepsionis</span><span class="dia">✦</span>
+      <span>Pendaftaran &amp; Informasi: <b>${CONFIG.PHONE}</b></span><span class="dia">✦</span>
+    </div>`;
+  $("#mq").innerHTML = set + set + set;
+}
+
+/* ---------- ORNAMEN LATAR ---------- */
+function renderOrnaments() {
+  // ornamen latar diletakkan di belakang panel (di .main)
+  document.querySelectorAll(".plus.bg").forEach(n => n.remove());
+  const main = document.querySelector(".main");
+  const arr = [
+    [20, "62%", 190, -14], [70, "4%", 150, 10], [46, "88%", 110, 0],
+    [8, "30%", 120, 22], [82, "60%", 140, -8],
+  ];
+  arr.forEach(([top, left, size, rot]) => {
+    const s = document.createElement("span");
+    s.className = "plus bg";
+    s.style.cssText = `top:${top}%;left:${left};font-size:${size}px;transform:rotate(${rot}deg);color:rgba(255,255,255,.035)`;
+    main.prepend(s);
+  });
+}
+
+/* ---------- TRANSISI HALUS ---------- */
+/* Crossfade: konten lama di-clone jadi overlay yang memudar,
+   konten baru tampil dengan animasi naik-lembut dari bawah. */
+function transitionSwap(container, buildFn, fadeDur = 400) {
+  if (!container) return buildFn?.();
+  /* salin tampilan lama sebagai overlay */
+  const overlay = container.cloneNode(true);
+  overlay.removeAttribute("id");
+  overlay.querySelectorAll("[id]").forEach(n => n.removeAttribute("id"));
+  overlay.style.cssText += ";position:absolute;inset:0;z-index:6;pointer-events:none;";
+  if (getComputedStyle(container).position === "static") container.style.position = "relative";
+
+  /* render konten baru */
+  buildFn?.();
+
+  /* overlay lama memudar di atas konten baru */
+  container.appendChild(overlay);
+  const anim = overlay.animate(
+    [{ opacity: 1 }, { opacity: 0 }],
+    { duration: fadeDur, easing: "cubic-bezier(.4,0,.2,1)", fill: "forwards" }
+  );
+  anim.onfinish = () => overlay.remove();
+
+  /* konten baru masuk lembut */
+  container.firstElementChild?.animate(
+    [{ opacity: 0, transform: "translateY(18px) scale(.985)" }, { opacity: 1, transform: "none" }],
+    { duration: 560, easing: "cubic-bezier(.22,1,.36,1)" }
+  );
+}
+
+/* Garis "sekarang" meluncur mulus (dipanggil tiap detik, CSS transition yang menggerakkan) */
+function updateNowLine() {
+  const n = state.now, nowMin = n.getHours() * 60 + n.getMinutes();
+  const pct = Math.min(Math.max((nowMin - H_START) / SPAN, 0), 1) * 100;
+  const line = document.querySelector(".tl-now .line");
+  const pill = document.querySelector(".tl-now .pill");
+  if (line) line.style.left = pct + "%";
+  if (pill) { pill.style.left = pct + "%"; pill.textContent = fmt(nowMin); }
+}
+
+/* Sinkronkan highlight baris mengikuti dokter sorotan tanpa rebuild (transisi CSS bekerja) */
+function syncRowHighlights() {
+  const ids = new Set(state.spotIds);
+  document.querySelectorAll("#tlBody .row").forEach(r =>
+    r.classList.toggle("spot-row", ids.has(Number(r.dataset.id))));
+}
+
+/* ---------- RENDER PENUH ---------- */
+function refreshPool() {
+  const nowMin = state.now.getHours() * 60 + state.now.getMinutes();
+  const { pool, badge } = buildPool(state.dokter, nowMin);
+  const chunks = chunk2(pool);
+  const sig = JSON.stringify(chunks.map(c => c.map(d => d.id)));
+  const changed = sig !== JSON.stringify(state.spotPool.map(c => c.map(d => d.id)));
+  state.spotPool = chunks; state.spotBadge = badge;
+  if (changed) {
+    state.spotIdx = 0;
+    transitionSwap($("#spot"), renderSpot, 360);
+    syncRowHighlights();
+  }
+}
+
+function renderAll() {
+  renderClock();
+  refreshPool();
+  renderTimeline();
+  syncRowHighlights();
+}
+
+/* Ganti dokter sorotan tiap 8 detik — dengan crossfade */
+setInterval(() => {
+  if (state.spotPool.length > 1) {
+    state.spotIdx = (state.spotIdx + 1) % state.spotPool.length;
+    transitionSwap($("#spot"), renderSpot, 420);
+    syncRowHighlights();
+  }
+}, CONFIG.SPOT_MS);
+
+/* Ganti halaman timeline tiap 12 detik — dengan crossfade */
+setInterval(() => {
+  if (state.pages.length > 1) {
+    state.pageIdx = (state.pageIdx + 1) % state.pages.length;
+    transitionSwap($("#tlBody"), renderTimeline, 340);
+  }
+}, CONFIG.PAGE_MS);
+
+/* Segarkan status tiap 10 detik + jam & garis "sekarang" tiap detik */
+setInterval(renderAll, 10000);
+setInterval(renderClock, 1000);
+
+/* ============================================================
+   SUMBER DATA
+   ============================================================ */
+/* Bersihkan teks spesialis dari database yang berisi deskripsi panjang,
+   mis. "dokter spesialis bedah rumah sakit royal prima jambi favorit" → "Bedah" */
+function cleanSpesialis(raw) {
+  let s = String(raw || "").trim();
+  s = s.replace(/^dokter\s+spesialis\s+/i, "").replace(/^spesialis\s+/i, "");
+  s = s.replace(/\s*(di\s+)?rumah\s+s\w*.*$/i, "");
+  s = s.replace(/\b(favorit|royal\s+prima|jambi)\b/ig, "").replace(/\s{2,}/g, " ").trim();
+  s = s.replace(/[,\-]+$/, "").trim();
+  if (!s) s = "Dokter";
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+async function fetchSupabase() {
+  const U = CONFIG.SUPABASE_URL, K = CONFIG.SUPABASE_KEY;
+  if (!U || !K) throw new Error("supabase belum dikonfigurasi");
+  const H = { apikey: K, Authorization: `Bearer ${K}` };
+  const hari = new Intl.DateTimeFormat("id-ID", { weekday:"long" }).format(new Date());
+  const [dRes, jRes, iRes] = await Promise.all([
+    fetch(`${U}/rest/v1/dokter?select=*,poliklinik(nama,lokasi)&order=id`, { headers: H }),
+    fetch(`${U}/rest/v1/jadwal?select=*&hari=eq.${encodeURIComponent(hari)}`, { headers: H }),
+    fetch(`${U}/rest/v1/infoCard?select=emergency_phone,hp,location_address&limit=1`, { headers: H }),
+  ]);
+  if (!dRes.ok || !jRes.ok) throw new Error("gagal mengambil data supabase");
+  const dokter = await dRes.json(), jadwal = await jRes.json();
+  const info = (await iRes.json().catch(() => []))[0];
+
+  /* Nama RS & nomor pendaftaran otomatis dari database (jika tersedia) */
+  if (info?.emergency_phone) {
+    CONFIG.PHONE = info.emergency_phone;
+    renderFooter();
+  }
+  const byDokter = {};
+  for (const j of jadwal) (byDokter[j.dokterid] ||= []).push([j.jamMulai, j.jamSelesai]);
+  return dokter
+    .filter(d => (byDokter[d.id] || []).length)
+    .map(d => ({
+      nama: d.nama,
+      spesialis: cleanSpesialis(d.spesialist),
+      poli: (d.poliklinik?.nama || "").replace(/^Klinik\s+/i, "") || "Poli Umum",
+      lok: d.poliklinik?.lokasi || "",
+      foto: parseFoto(d.potourl),
+      cuti: d.status === false,
+      sesi: (byDokter[d.id] || []).sort(),
+    }));
+}
+
+async function loadData() {
+  try {
+    let data;
+    if (CONFIG.DATA_MODE === "supabase") data = await fetchSupabase();
+    else if (CONFIG.DATA_MODE === "url") {
+      const r = await fetch(CONFIG.DATA_URL + "?t=" + Date.now());
+      if (!r.ok) throw new Error("gagal fetch url");
+      data = await r.json();
+    } else data = SAMPLE_DATA;
+
+    const n = normalize(data);
+    if (n.length) { state.dokter = n; renderAll(); }
+  } catch (e) {
+    console.warn("[TV] sumber data gagal, memakai data contoh:", e.message);
+    if (!state.dokter.length) { state.dokter = normalize(SAMPLE_DATA); renderAll(); }
+  }
+}
+
+/* ---------- INISIALISASI ---------- */
+$("#hdName").textContent = CONFIG.HOSPITAL_NAME;
+renderFooter();
+renderOrnaments();
+renderAll();
+loadData();
+setInterval(loadData, CONFIG.REFRESH_MS);
+
+/* Animasi masuk saat layar pertama menyala */
+stage.animate(
+  [{ opacity: 0, filter: "brightness(1.6)" }, { opacity: 1, filter: "brightness(1)" }],
+  { duration: 900, easing: "cubic-bezier(.22,1,.36,1)" }
+);
+</script>
+</body>
+</html>
