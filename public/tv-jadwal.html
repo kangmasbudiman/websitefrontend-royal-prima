@@ -337,6 +337,230 @@
     box-shadow:0 4px 12px rgba(0,0,0,.3);
   }
 
+  /* ============ PEMILIH TEMA (pojok kanan dekat jam) ============ */
+  .hd-right { display:flex; align-items:center; gap:24px; }
+  .hd-when { text-align:right; }
+  .tp {
+    display:inline-flex; align-items:center; gap:10px; flex:0 0 auto;
+    font-family:inherit; font-size:19px; font-weight:800; color:#fff;
+    background:rgba(255,255,255,.14); border:2px solid rgba(255,255,255,.38);
+    border-radius:999px; padding:10px 20px; cursor:pointer;
+    transition:background .2s, transform .2s;
+  }
+  .tp:hover { background:rgba(255,255,255,.26); transform:translateY(-1px); }
+  .tp-menu {
+    position:absolute; top:112px; right:40px; z-index:30; width:470px;
+    background:#0B3242; border:2px solid rgba(245,184,61,.55); border-radius:18px;
+    box-shadow:0 24px 70px rgba(0,0,0,.65); padding:14px; display:none;
+  }
+  .tp-menu.open { display:block; animation:tpIn .22s cubic-bezier(.22,1,.36,1); }
+  @keyframes tpIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+  .tp-mhead { font-size:17px; font-weight:800; letter-spacing:2.5px; color:#F5B83D; padding:6px 10px 10px; }
+  .tp-item {
+    display:flex; align-items:center; gap:14px; width:100%;
+    background:transparent; border:0; cursor:pointer; text-align:left;
+    padding:11px 12px; border-radius:12px; color:#fff; font-family:inherit;
+  }
+  .tp-item:hover { background:rgba(255,255,255,.09); }
+  .tp-item.on { background:rgba(245,184,61,.15); box-shadow:inset 0 0 0 1.5px rgba(245,184,61,.6); }
+  .tp-key {
+    width:34px; height:34px; border-radius:9px; flex:0 0 34px;
+    background:rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center;
+    font-size:17px; font-weight:800; color:#F5B83D;
+  }
+  .tp-nama { font-size:20px; font-weight:800; display:block; }
+  .tp-desc { font-size:16px; font-weight:600; color:#9DB6C6; margin-top:1px; }
+  .tp-check { margin-left:auto; color:#F5B83D; font-size:22px; opacity:0; }
+  .tp-item.on .tp-check { opacity:1; }
+  .tp-note { padding:10px 12px 2px; font-size:15px; color:#7E99AA; }
+  .toast {
+    position:absolute; left:50%; bottom:78px; transform:translateX(-50%); z-index:40;
+    background:#0B3242; border:2px solid rgba(245,184,61,.6); color:#fff;
+    font-size:22px; font-weight:700; padding:14px 30px; border-radius:14px;
+    opacity:0; pointer-events:none; transition:opacity .3s;
+  }
+  .toast.show { opacity:1; }
+
+  /* ============ VARIAN LAYOUT TEMA ============ */
+  /* kolom judul + chip halaman (dipakai tema non-timeline) */
+  .t-v1, .t-v4 { display:flex; flex-direction:column; grid-template-columns:none; }
+  .strip { display:flex; align-items:center; justify-content:space-between; padding:2px 4px 18px; flex:0 0 auto; }
+  .rv { display:flex; flex-direction:column; min-height:0; }
+  .chip {
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:17px; font-weight:800; letter-spacing:.4px;
+    padding:7px 16px; border-radius:999px; white-space:nowrap;
+  }
+  .g1-ava img, .l2-ava img, .ls-ava img, .pb-ava img, .pt-img img,
+  .g1-ava svg, .l2-ava svg, .ls-ava svg, .pb-ava svg, .pt-img svg {
+    width:100%; height:100%; object-fit:cover; object-position:top; display:block;
+  }
+
+  /* ---------- TEMA 1 : GRID 4x2 ---------- */
+  .g1-grid { flex:1; min-height:0; display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:1fr 1fr; gap:22px; }
+  .g1-card {
+    position:relative; border-radius:22px; background:#fff; overflow:hidden; min-height:0;
+    box-shadow:0 14px 36px rgba(0,0,0,.4);
+    padding:0 20px 24px; display:flex; flex-direction:column; align-items:center; text-align:center;
+  }
+  .g1-top { position:absolute; top:0; left:0; right:0; height:118px; background:var(--ct,#0B5F7A22); }
+  .g1-card.faded { opacity:.5; }
+  .g1-ava {
+    width:104px; height:104px; border-radius:50%; overflow:hidden; margin-top:16px;
+    border:6px solid var(--c,#0B5F7A); background:var(--cd,#0B5F7A);
+    position:relative; z-index:2; box-shadow:0 8px 20px rgba(0,0,0,.28);
+  }
+  .g1-st { position:absolute; top:14px; right:14px; z-index:3; }
+  .g1-nm {
+    margin-top:16px; font-size:27px; font-weight:800; color:#102A38; line-height:1.15;
+    max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .g1-sp { margin-top:5px; font-size:21px; font-weight:800; color:var(--c,#0B5F7A); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .g1-po { margin-top:3px; font-size:19px; font-weight:600; color:#5A6B87; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .g1-jam {
+    margin-top:auto; width:100%; background:var(--c,#0B5F7A); color:#fff;
+    font-size:23px; font-weight:800; border-radius:14px; padding:11px 8px;
+    line-height:1.3; font-variant-numeric:tabular-nums;
+  }
+  .g1-jam.kecil { font-size:19px; }
+  .g1-jam i { display:block; font-style:normal; white-space:nowrap; }
+
+  /* ---------- TEMA 2 : SOROTAN + DAFTAR 2 KOLOM ---------- */
+  .t-v2 { grid-template-columns:620px 1fr; }
+  .l2-grid { flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:1fr; gap:18px; }
+  .l2-card {
+    position:relative; display:flex; align-items:center; gap:16px;
+    background:#fff; border-radius:18px; padding:12px 16px 12px 24px;
+    box-shadow:0 12px 30px rgba(0,0,0,.38); overflow:hidden; min-height:0;
+  }
+  .l2-card::before { content:""; position:absolute; left:0; top:0; bottom:0; width:8px; background:var(--c,#0B5F7A); }
+  .l2-card.faded { opacity:.55; }
+  .l2-ava {
+    width:86px; height:86px; border-radius:20px; overflow:hidden;
+    border:4px solid var(--c,#0B5F7A); background:var(--cd,#0B5F7A); flex:0 0 86px;
+    box-shadow:0 5px 14px rgba(0,0,0,.22);
+  }
+  .l2-txt { flex:1; min-width:0; }
+  .l2-nm { font-size:24px; font-weight:800; color:#102A38; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .l2-sp { margin-top:3px; font-size:19px; font-weight:800; color:var(--c,#0B5F7A); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .l2-po { margin-top:2px; font-size:18px; font-weight:600; color:#5A6B87; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .l2-r { display:flex; flex-direction:column; align-items:flex-end; gap:9px; flex:0 0 auto; }
+  .l2-jam {
+    background:var(--c,#0B5F7A); color:#fff; font-size:19px; font-weight:800;
+    border-radius:12px; padding:8px 14px; white-space:nowrap; font-variant-numeric:tabular-nums;
+    max-width:250px; overflow:hidden; text-overflow:ellipsis;
+  }
+
+  /* ---------- TEMA 3 : SIDEBAR + DAFTAR ---------- */
+  .t-v3 { grid-template-columns:470px 1fr; }
+  .sb {
+    position:relative; border-radius:24px; overflow:hidden; height:100%;
+    background:linear-gradient(168deg,#0B5F7A 0%,#073F53 78%,#063546 100%);
+    box-shadow:0 18px 50px rgba(0,0,0,.5);
+    padding:36px 34px 30px; display:flex; flex-direction:column; color:#fff;
+  }
+  .sb-logo { position:relative; width:64px; height:74px; display:flex; align-items:center; justify-content:center; }
+  .sb-logo::before {
+    content:""; position:absolute; inset:-16px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.17), transparent 64%);
+  }
+  .sb-logo img { height:70px; width:auto; position:relative; filter:drop-shadow(0 6px 12px rgba(0,0,0,.38)); }
+  .sb-nm { font-family:'Fraunces', Georgia, serif; font-size:31px; font-weight:700; letter-spacing:.05em; line-height:1.22; margin-top:20px; }
+  .sb-tag { font-family:'Great Vibes', cursive; font-size:25px; color:#F5B83D; margin-top:4px; }
+  .sb-clock {
+    margin-top:30px; font-size:92px; font-weight:800; line-height:1;
+    letter-spacing:1px; font-variant-numeric:tabular-nums; display:flex; align-items:baseline;
+  }
+  .sb-clock .sb-sec { font-size:32px; font-weight:700; color:#F5B83D; margin-left:8px; }
+  .sb-date { font-size:21px; font-weight:600; color:rgba(255,255,255,.85); margin-top:8px; }
+  .sb-title {
+    margin-top:38px; border-left:7px solid #F5B83D; padding-left:18px;
+    font-size:35px; font-weight:800; line-height:1.25; letter-spacing:.5px;
+  }
+  .sb-legend { margin-top:auto; display:flex; flex-direction:column; gap:11px; }
+  .sb-legend span { display:flex; align-items:center; gap:12px; font-size:19px; font-weight:700; color:rgba(255,255,255,.92); }
+  .sb-page { margin-top:18px; display:flex; align-items:center; gap:12px; font-size:18px; font-weight:700; color:#9DB6C6; }
+  .ls-rows { flex:1; min-height:0; display:flex; flex-direction:column; gap:16px; }
+  .ls-row {
+    position:relative; flex:1; min-height:0; display:flex; align-items:center; gap:22px;
+    background:#fff; border-radius:18px; padding:12px 26px 12px 30px;
+    box-shadow:0 12px 30px rgba(0,0,0,.38); overflow:hidden;
+  }
+  .ls-row::before { content:""; position:absolute; left:0; top:0; bottom:0; width:10px; background:var(--c,#0B5F7A); }
+  .ls-row.faded { opacity:.5; }
+  .ls-ava {
+    width:78px; height:78px; border-radius:50%; overflow:hidden; flex:0 0 78px;
+    border:4px solid var(--c,#0B5F7A); background:var(--cd,#0B5F7A);
+    box-shadow:0 5px 14px rgba(0,0,0,.22);
+  }
+  .ls-txt { flex:1; min-width:0; }
+  .ls-nm { font-size:27px; font-weight:800; color:#102A38; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ls-sp { margin-top:3px; font-size:20px; font-weight:800; color:var(--c,#0B5F7A); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ls-po { margin-top:2px; font-size:18px; font-weight:600; color:#5A6B87; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ls-jam {
+    background:var(--c,#0B5F7A); color:#fff; border-radius:12px; padding:10px 18px;
+    font-size:21px; font-weight:800; white-space:nowrap; font-variant-numeric:tabular-nums; flex:0 0 auto;
+    max-width:330px; overflow:hidden; text-overflow:ellipsis;
+  }
+
+  /* ---------- TEMA 4 : KARTU POTRET BESAR ---------- */
+  .pt-grid { flex:1; min-height:0; display:grid; grid-template-columns:repeat(4,1fr); gap:24px; }
+  .pt-card {
+    position:relative; border-radius:24px; background:#fff; overflow:hidden; min-height:0;
+    box-shadow:0 14px 36px rgba(0,0,0,.42); display:flex; flex-direction:column;
+  }
+  .pt-card.faded { opacity:.55; }
+  .pt-photo { position:relative; height:47%; flex:0 0 47%; background:var(--ct,#0B5F7A22); display:flex; justify-content:center; }
+  .pt-img { width:84%; height:100%; border-radius:150px 150px 0 0; overflow:hidden; background:var(--cd,#0B5F7A); }
+  .pt-strip { height:8px; flex:0 0 8px; background:var(--c,#0B5F7A); }
+  .pt-body { padding:20px 22px 24px; text-align:center; display:flex; flex-direction:column; flex:1; min-height:0; }
+  .pt-st { position:absolute; top:16px; left:16px; z-index:3; }
+  .pt-nm { font-size:26px; font-weight:800; color:#102A38; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pt-sp { margin-top:6px; font-size:21px; font-weight:800; color:var(--c,#0B5F7A); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pt-po { margin-top:4px; font-size:18px; font-weight:600; color:#5A6B87; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pt-jam {
+    margin-top:auto; background:var(--c,#0B5F7A); color:#fff; border-radius:14px;
+    padding:12px 8px; font-size:22px; font-weight:800; line-height:1.3; font-variant-numeric:tabular-nums;
+  }
+  .pt-jam i { display:block; font-style:normal; white-space:nowrap; }
+
+  /* ---------- TEMA 6 : PAPAN INFORMASI ---------- */
+  .t-v6 { display:flex; flex-direction:column; }
+  .pb-head { display:flex; align-items:flex-start; justify-content:space-between; padding:2px 4px 22px; flex:0 0 auto; }
+  .pb-chip { display:flex; align-items:center; gap:14px; margin-top:12px; }
+  .pb-stats { display:flex; gap:18px; }
+  .pb-stat { display:flex; align-items:center; gap:16px; border-radius:16px; padding:12px 24px; }
+  .pb-stat b { font-size:42px; line-height:1; font-variant-numeric:tabular-nums; }
+  .pb-stat span { font-size:18px; font-weight:700; line-height:1.2; text-align:left; color:rgba(255,255,255,.85); }
+  .pb-stat.sedang  { background:rgba(16,185,129,.13); border:2px solid rgba(52,211,153,.55); } .pb-stat.sedang b  { color:#6EE7B7; }
+  .pb-stat.akan    { background:rgba(245,184,61,.12); border:2px solid rgba(245,184,61,.6); } .pb-stat.akan b    { color:#F5B83D; }
+  .pb-stat.selesai { background:rgba(255,255,255,.07); border:2px solid rgba(255,255,255,.28); } .pb-stat.selesai b { color:#C7D6E2; }
+  .pb-cols, .pb-row {
+    display:grid; grid-template-columns:96px 430px 350px 270px 350px 240px;
+    gap:12px; align-items:center;
+  }
+  .pb-cols { padding-bottom:14px; }
+  .pb-cols span { font-size:18px; font-weight:800; letter-spacing:2.5px; color:#7E99AA; text-transform:uppercase; padding-left:6px; }
+  .pb-rows { flex:1; min-height:0; display:flex; flex-direction:column; gap:14px; }
+  .pb-row {
+    flex:1; min-height:0; position:relative; overflow:hidden;
+    background:rgba(255,255,255,.05); border-radius:16px;
+  }
+  .pb-row::before { content:""; position:absolute; left:0; top:0; bottom:0; width:8px; background:var(--c,#0B5F7A); }
+  .pb-row.faded { opacity:.45; }
+  .pb-ava {
+    width:64px; height:64px; border-radius:50%; overflow:hidden; margin-left:24px;
+    border:3.5px solid var(--c,#0B5F7A); background:var(--cd,#0B5F7A); flex:0 0 64px;
+  }
+  .pb-nm { font-size:25px; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:20px; }
+  .pb-sp { font-size:20px; font-weight:700; color:rgba(255,255,255,.92); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:16px; }
+  .pb-po { font-size:19px; font-weight:600; color:#9DB6C6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:16px; }
+  .pb-jam {
+    font-size:25px; font-weight:800; color:#F5B83D; white-space:nowrap;
+    overflow:hidden; text-overflow:ellipsis; font-variant-numeric:tabular-nums; padding-right:10px;
+  }
+  .pb-jam.kosong { color:#7E99AA; }
+
   /* ============ FOOTER (56px) ============ */
   .ft {
     height:56px; flex:0 0 56px;
@@ -367,25 +591,18 @@
       </div>
     </div>
     <div class="hd-right">
-      <div class="hd-date" id="hdDate">—</div>
-      <div class="hd-clock"><span id="clk">--:--</span><span class="sec" id="clkSec"></span></div>
+      <button class="tp" id="tpBtn" type="button" title="Pilih tema tampilan (tekan 1-6)">🎨 Tema</button>
+      <div class="hd-when">
+        <div class="hd-date" id="hdDate">—</div>
+        <div class="hd-clock"><span id="clk">--:--</span><span class="sec" id="clkSec"></span></div>
+      </div>
     </div>
   </header>
+  <div class="tp-menu" id="tpMenu"></div>
+  <div class="toast" id="toast"></div>
 
-  <!-- KONTEN -->
-  <main class="main">
-    <section class="spot" id="spot"></section>
-    <section class="tl">
-      <div class="tl-head">
-        <div>
-          <div class="tl-title">JADWAL HARI INI</div>
-          <div class="tl-date" id="tlDate">—</div>
-        </div>
-        <div class="tl-pageinfo" id="tlPage"></div>
-      </div>
-      <div class="tl-body" id="tlBody"></div>
-    </section>
-  </main>
+  <!-- KONTEN (dirender sesuai tema) -->
+  <main class="main" id="main"></main>
 
   <!-- FOOTER -->
   <footer class="ft"><div class="mq" id="mq"></div></footer>
@@ -505,9 +722,31 @@ function statusOf(d, now) {
 }
 
 /* ============================================================
+   TEMA TAMPILAN
+   ============================================================ */
+const THEMES = [
+  { id:"v1", nama:"Grid 4×2",            desc:"8 kartu dokter per halaman" },
+  { id:"v2", nama:"Sorotan + Daftar",    desc:"Sorotan besar + 8 kartu ringkas" },
+  { id:"v3", nama:"Sidebar + Daftar",    desc:"Jam digital besar + baris dokter" },
+  { id:"v4", nama:"Kartu Potret",        desc:"4 kartu potret besar per halaman" },
+  { id:"v5", nama:"Sorotan + Timeline",  desc:"Sorotan + garis waktu (bawaan)" },
+  { id:"v6", nama:"Papan Informasi",     desc:"Tabel gelap + statistik ringkas" },
+];
+/* jumlah dokter per halaman untuk tiap tema */
+const PAGE_SIZE = { v1:8, v2:8, v3:5, v4:4, v5:8, v6:8 };
+
+/* Pilihan tema tersimpan di localStorage (aman dibungkus try utk mode kiosk) */
+let _savedTheme = "v5";
+try {
+  const t = localStorage.getItem("tvTheme");
+  if (["v1","v2","v3","v4","v5","v6"].includes(t)) _savedTheme = t;
+} catch {}
+
+/* ============================================================
    STATE + RENDER
    ============================================================ */
 const state = {
+  theme: _savedTheme,
   dokter: [], now: new Date(),
   spotIdx: 0, spotPool: [], spotBadge: "",
   pageIdx: 0, pages: [], spotIds: [],
@@ -613,8 +852,14 @@ function renderClock() {
   const n = state.now;
   $("#hdDate").textContent = new Intl.DateTimeFormat("id-ID",
     { weekday:"long", day:"numeric", month:"long", year:"numeric" }).format(n);
-  $("#clk").textContent = n.toLocaleTimeString("id-ID", { hour:"2-digit", minute:"2-digit", hourCycle:"h23" });
-  $("#clkSec").textContent = n.toLocaleTimeString("id-ID", { second:"2-digit" }).padStart(2,"0");
+  const jam = n.toLocaleTimeString("id-ID", { hour:"2-digit", minute:"2-digit", hourCycle:"h23" });
+  const det = n.toLocaleTimeString("id-ID", { second:"2-digit" }).padStart(2,"0");
+  $("#clk").textContent = jam;
+  $("#clkSec").textContent = det;
+  /* jam digital tema Sidebar (jika sedang aktif) */
+  const sb = $("#sbClock"), sbs = $("#sbSec");
+  if (sb) sb.textContent = jam;
+  if (sbs) sbs.textContent = det;
   updateNowLine();
 }
 
@@ -681,24 +926,31 @@ function renderSpot() {
   }
 }
 
+/* ---------- HALAMAN (dipakai semua tema) ---------- */
+function buildPages() {
+  const rows = sortRows(state.dokter, state.now);
+  const size = PAGE_SIZE[state.theme] || 8;
+  state.pages = [];
+  for (let i = 0; i < rows.length; i += size) state.pages.push(rows.slice(i, i + size));
+  if (!state.pages.length) state.pages.push([]);
+  state.pageIdx = Math.min(state.pageIdx, state.pages.length - 1);
+}
+/* chip halaman + titik indikator (sembunyikan jika 1 halaman) */
+function pageChipInner() {
+  if (state.pages.length <= 1) return "";
+  return `<span class="tl-pagechip">Halaman ${state.pageIdx + 1} / ${state.pages.length}</span>
+     <span class="tl-dots">${state.pages.map((_,i) => `<i class="${i===state.pageIdx?"on":""}"></i>`).join("")}</span>`;
+}
+
 /* ---------- TIMELINE KANAN ---------- */
 function renderTimeline() {
   const now = state.now, nowMin = now.getHours() * 60 + now.getMinutes();
   $("#tlDate").textContent = new Intl.DateTimeFormat("id-ID",
     { weekday:"long", day:"numeric", month:"long", year:"numeric" }).format(now) + " · WIB";
 
-  const rows = sortRows(state.dokter, now);
-  state.pages = [];
-  for (let i = 0; i < rows.length; i += 8) state.pages.push(rows.slice(i, i + 8));
-  if (!state.pages.length) state.pages.push([]);
-  state.pageIdx = Math.min(state.pageIdx, state.pages.length - 1);
-
-  /* chip halaman + titik indikator (sembunyikan jika 1 halaman) */
-  const multi = state.pages.length > 1;
-  $("#tlPage").innerHTML = multi
-    ? `<span class="tl-pagechip">Halaman ${state.pageIdx + 1} / ${state.pages.length}</span>
-       <span class="tl-dots">${state.pages.map((_,i) => `<i class="${i===state.pageIdx?"on":""}"></i>`).join("")}</span>`
-    : "";
+  buildPages();
+  const chip = $("#tlPage");
+  if (chip) chip.innerHTML = pageChipInner();
 
   /* label sumbu 07 – 21 tiap 2 jam (angka jam saja agar tidak pernah bertumpuk) */
   let axis = "";
@@ -777,11 +1029,231 @@ function renderTimeline() {
       <span class="line" style="left:${nowPct}%"></span>
     </div>`;
 
-  $("#tlBody").innerHTML =
+  $("#pgBody").innerHTML =
     `<div class="tl-axis">${axis}</div>
      <div class="tl-grid">${grid}</div>
      ${nowHTML}
      <div class="tl-rows">${rowsHTML}</div>`;
+}
+
+/* ============================================================
+   RENDERER TEMA (V1 grid, V2 sorotan+daftar, V3 sidebar,
+   V4 potret, V6 papan) — V5 = timeline di atas
+   ============================================================ */
+function page() { return state.pages[state.pageIdx] || []; }
+function jamLines(d) { return d.sesi.map(s2 => `${fmt(s2.m)} – ${fmt(s2.e)}`); }
+
+/* ---------- TEMA 1 : GRID 4x2 ---------- */
+function renderGrid() {
+  buildPages();
+  $("#pgBody").innerHTML = page().map(d => {
+    const s = statusOf(d, state.now);
+    const lines = jamLines(d);
+    return `<div class="g1-card ${s.st==="tidak"?"faded":""}" style="--c:${d.c};--cd:${d.cd};--ct:${d.c}22">
+      <div class="g1-top"></div>
+      ${photoEl(d,"g1-ava")}
+      <span class="chip g1-st st-${s.st}">${s.label}</span>
+      <div class="g1-nm">${d.namaShort}</div>
+      <div class="g1-sp">${d.spesialis}</div>
+      <div class="g1-po">${d.poli}</div>
+      <div class="g1-jam ${lines.length>2?"kecil":""}">${lines.map(l=>`<i>${l}</i>`).join("") || "—"}</div>
+    </div>`;
+  }).join("");
+}
+
+/* ---------- TEMA 2 : SOROTAN + DAFTAR 2 KOLOM ---------- */
+function renderListGrid() {
+  buildPages();
+  $("#pgBody").innerHTML = page().map(d => {
+    const s = statusOf(d, state.now);
+    return `<div class="l2-card ${s.st==="tidak"?"faded":""}" style="--c:${d.c};--cd:${d.cd};--ct:${d.c}22">
+      ${photoEl(d,"l2-ava")}
+      <div class="l2-txt">
+        <div class="l2-nm">${d.namaShort}</div>
+        <div class="l2-sp">${d.spesialis}</div>
+        <div class="l2-po">${d.poli}</div>
+      </div>
+      <div class="l2-r">
+        <span class="l2-jam">${jamLines(d).join(" · ") || "—"}</span>
+        <span class="chip st-${s.st}">${s.label}</span>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ---------- TEMA 3 : SIDEBAR + DAFTAR BARIS ---------- */
+function renderListRows() {
+  buildPages();
+  $("#pgBody").innerHTML = page().map(d => {
+    const s = statusOf(d, state.now);
+    return `<div class="ls-row ${s.st==="tidak"?"faded":""}" style="--c:${d.c};--cd:${d.cd}">
+      ${photoEl(d,"ls-ava")}
+      <div class="ls-txt">
+        <div class="ls-nm">${d.namaShort}</div>
+        <div class="ls-sp">${d.spesialis}</div>
+        <div class="ls-po">${d.poli}</div>
+      </div>
+      <span class="ls-jam">${jamLines(d).join(" · ") || "—"}</span>
+      <span class="chip st-${s.st}">${s.label}</span>
+    </div>`;
+  }).join("");
+}
+function renderSidebar() {
+  const n = state.now;
+  $("#pgSide").innerHTML = `
+    <span class="plus gold" style="top:-40px;right:-30px;font-size:150px;transform:rotate(-12deg)">+</span>
+    <span class="plus" style="bottom:24%;left:-36px;font-size:120px;transform:rotate(14deg)">+</span>
+    <div class="sb-logo"><img src="/logo-shield.png" alt="Logo" /></div>
+    <div class="sb-nm">${CONFIG.HOSPITAL_NAME.toUpperCase()}</div>
+    <div class="sb-tag">${CONFIG.SUBTITLE}</div>
+    <div class="sb-clock"><span id="sbClock">${n.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",hourCycle:"h23"})}</span><span class="sb-sec" id="sbSec">${n.toLocaleTimeString("id-ID",{second:"2-digit"}).padStart(2,"0")}</span></div>
+    <div class="sb-date">${new Intl.DateTimeFormat("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(n)}</div>
+    <div class="sb-title">JADWAL DOKTER HARI INI</div>
+    <div class="sb-legend">
+      <span><i class="dot sedang" style="width:15px;height:15px;border-radius:50%;flex:0 0 15px"></i> Sedang Praktek</span>
+      <span><i class="dot akan" style="width:15px;height:15px;border-radius:50%;flex:0 0 15px"></i> Akan Praktek</span>
+      <span><i class="dot selesai" style="width:15px;height:15px;border-radius:50%;flex:0 0 15px"></i> Selesai</span>
+    </div>
+    <div class="sb-page">Halaman ${state.pageIdx + 1} / ${state.pages.length}
+      <span class="tl-dots">${state.pages.map((_,i)=>`<i class="${i===state.pageIdx?"on":""}"></i>`).join("")}</span>
+    </div>`;
+}
+
+/* ---------- TEMA 4 : KARTU POTRET BESAR ---------- */
+function renderPotret() {
+  buildPages();
+  $("#pgBody").innerHTML = page().map(d => {
+    const s = statusOf(d, state.now);
+    const lines = jamLines(d);
+    return `<div class="pt-card ${s.st==="tidak"?"faded":""}" style="--c:${d.c};--cd:${d.cd};--ct:${d.c}22">
+      <span class="chip pt-st st-${s.st}">${s.label}</span>
+      <div class="pt-photo">${photoEl(d,"pt-img")}</div>
+      <div class="pt-strip"></div>
+      <div class="pt-body">
+        <div class="pt-nm">${d.namaShort}</div>
+        <div class="pt-sp">${d.spesialis}</div>
+        <div class="pt-po">${d.poli}</div>
+        <div class="pt-jam">${lines.map(l=>`<i>${l}</i>`).join("") || "—"}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ---------- TEMA 6 : PAPAN INFORMASI ---------- */
+function papanStats() {
+  const c = { sedang:0, akan:0, off:0 };
+  state.dokter.forEach(d => {
+    const st = statusOf(d, state.now).st;
+    if (st === "sedang") c.sedang++; else if (st === "akan") c.akan++; else c.off++;
+  });
+  return `<span class="pb-stat sedang"><b>${c.sedang}</b><span>Sedang<br>Praktek</span></span>
+    <span class="pb-stat akan"><b>${c.akan}</b><span>Akan<br>Praktek</span></span>
+    <span class="pb-stat selesai"><b>${c.off}</b><span>Selesai /<br>Tidak Praktek</span></span>`;
+}
+function renderPapan() {
+  buildPages();
+  $("#pgBody").innerHTML = page().map(d => {
+    const s = statusOf(d, state.now);
+    const jam = jamLines(d).join("  ·  ");
+    return `<div class="pb-row ${s.st==="tidak"?"faded":""}" style="--c:${d.c};--cd:${d.cd}">
+      ${photoEl(d,"pb-ava")}
+      <div class="pb-nm">${d.namaShort}</div>
+      <div class="pb-sp">${d.spesialis}</div>
+      <div class="pb-po">${d.poli}</div>
+      <div class="pb-jam ${jam?"":"kosong"}">${jam || "—"}</div>
+      <span class="chip st-${s.st}">${s.label}</span>
+    </div>`;
+  }).join("");
+}
+
+/* ============================================================
+   RENDER UTAMA — sesuai tema aktif
+   ============================================================ */
+const THEME_RENDER = { v1:renderGrid, v2:renderListGrid, v3:renderListRows, v4:renderPotret, v5:renderTimeline, v6:renderPapan };
+function renderPageRegion() {
+  const fn = THEME_RENDER[state.theme];
+  if (fn && $("#pgBody")) fn();
+  else if (fn) fn();
+}
+
+/* Kerangka konten per tema (dibangun saat ganti tema / pertama kali) */
+function renderSkeleton() {
+  const main = $("#main");
+  main.className = "main t-" + state.theme;
+  const chip = `<span class="tl-pageinfo" id="pgChip">${pageChipInner()}</span>`;
+  const strip = (judul) => `<div class="strip"><div class="tl-title">${judul}</div>${chip}</div>`;
+
+  if (state.theme === "v5") {
+    main.innerHTML = `<section class="spot" id="spot"></section>
+      <section class="tl">
+        <div class="tl-head">
+          <div>
+            <div class="tl-title">JADWAL HARI INI</div>
+            <div class="tl-date" id="tlDate">—</div>
+          </div>
+          <div class="tl-pageinfo" id="tlPage"></div>
+        </div>
+        <div class="tl-body" id="pgBody"></div>
+      </section>`;
+    renderSpot();
+    renderTimeline();
+    syncRowHighlights();
+  } else if (state.theme === "v2") {
+    main.innerHTML = `<section class="spot" id="spot"></section>
+      <section class="rv">
+        ${strip("JADWAL HARI INI")}
+        <div class="l2-grid" id="pgBody"></div>
+      </section>`;
+    renderSpot();
+    renderListGrid();
+  } else if (state.theme === "v1") {
+    main.innerHTML = `${strip("JADWAL DOKTER HARI INI")}
+      <div class="g1-grid" id="pgBody"></div>`;
+    renderGrid();
+  } else if (state.theme === "v3") {
+    main.innerHTML = `<section class="sb" id="pgSide"></section>
+      <section class="rv">
+        <div class="strip"><div></div>${chip}</div>
+        <div class="ls-rows" id="pgBody"></div>
+      </section>`;
+    buildPages();
+    renderSidebar();
+    renderListRows();
+  } else if (state.theme === "v4") {
+    main.innerHTML = `${strip("JADWAL DOKTER HARI INI")}
+      <div class="pt-grid" id="pgBody"></div>`;
+    renderPotret();
+  } else { /* v6 */
+    main.innerHTML = `<div class="pb-head">
+        <div>
+          <div class="tl-title">JADWAL DOKTER HARI INI</div>
+          <div class="pb-chip"><span class="tl-pageinfo" id="pgChip">${pageChipInner()}</span></div>
+        </div>
+        <div class="pb-stats" id="pbStats">${papanStats()}</div>
+      </div>
+      <div class="pb-cols">
+        <span></span><span>Dokter</span><span>Spesialis</span><span>Poli / Ruangan</span><span>Jam Praktek</span><span>Status</span>
+      </div>
+      <div class="pb-rows" id="pgBody"></div>`;
+    renderPapan();
+  }
+}
+
+function renderMain() {
+  const main = $("#main");
+  if (main.dataset.theme !== state.theme) {
+    main.dataset.theme = state.theme;
+    renderSkeleton();
+    const c = $("#pgChip");
+    if (c) c.innerHTML = pageChipInner();
+  } else {
+    /* segarkan isi halaman + statistik tanpa merombak kerangka (sorotan tidak terputus) */
+    renderPageRegion();
+    const ps = $("#pbStats");
+    if (ps) ps.innerHTML = papanStats();
+    const c = $("#pgChip");
+    if (c) c.innerHTML = pageChipInner();
+  }
 }
 
 /* ---------- FOOTER ---------- */
@@ -855,7 +1327,7 @@ function updateNowLine() {
 /* Sinkronkan highlight baris mengikuti dokter sorotan tanpa rebuild (transisi CSS bekerja) */
 function syncRowHighlights() {
   const ids = new Set(state.spotIds);
-  document.querySelectorAll("#tlBody .row").forEach(r =>
+  document.querySelectorAll("#pgBody .row").forEach(r =>
     r.classList.toggle("spot-row", ids.has(Number(r.dataset.id))));
 }
 
@@ -869,7 +1341,7 @@ function refreshPool() {
   state.spotPool = chunks; state.spotBadge = badge;
   if (changed) {
     state.spotIdx = 0;
-    transitionSwap($("#spot"), renderSpot, 360);
+    if ($("#spot")) transitionSwap($("#spot"), renderSpot, 360);
     syncRowHighlights();
   }
 }
@@ -877,30 +1349,95 @@ function refreshPool() {
 function renderAll() {
   renderClock();
   refreshPool();
-  renderTimeline();
-  syncRowHighlights();
+  renderMain();
 }
 
-/* Ganti dokter sorotan tiap 8 detik — dengan crossfade */
+/* Ganti dokter sorotan tiap 8 detik — dengan crossfade (tema berpanel sorotan saja) */
 setInterval(() => {
-  if (state.spotPool.length > 1) {
-    state.spotIdx = (state.spotIdx + 1) % state.spotPool.length;
-    transitionSwap($("#spot"), renderSpot, 420);
-    syncRowHighlights();
-  }
+  if (!$("#spot") || state.spotPool.length <= 1) return;
+  state.spotIdx = (state.spotIdx + 1) % state.spotPool.length;
+  transitionSwap($("#spot"), renderSpot, 420);
+  syncRowHighlights();
 }, CONFIG.SPOT_MS);
 
-/* Ganti halaman timeline tiap 12 detik — dengan crossfade */
+/* Ganti halaman tiap 12 detik — dengan crossfade (semua tema) */
 setInterval(() => {
-  if (state.pages.length > 1) {
-    state.pageIdx = (state.pageIdx + 1) % state.pages.length;
-    transitionSwap($("#tlBody"), renderTimeline, 340);
-  }
+  if (state.pages.length <= 1 || !$("#pgBody")) return;
+  state.pageIdx = (state.pageIdx + 1) % state.pages.length;
+  transitionSwap($("#pgBody"), renderPageRegion, 340);
+  const c = $("#pgChip");
+  if (c) c.innerHTML = pageChipInner();
+  if ($("#pgSide")) renderSidebar();
 }, CONFIG.PAGE_MS);
 
 /* Segarkan status tiap 10 detik + jam & garis "sekarang" tiap detik */
 setInterval(renderAll, 10000);
 setInterval(renderClock, 1000);
+
+/* ============================================================
+   PEMILIH TEMA (pojok kanan dekat jam / tombol angka 1-6)
+   ============================================================ */
+function buildThemeMenu() {
+  const menu = $("#tpMenu");
+  if (!menu) return;
+  menu.innerHTML = `<div class="tp-mhead">PILIH TEMA LAYAR</div>` +
+    THEMES.map((t, i) => `
+      <button class="tp-item ${t.id === state.theme ? "on" : ""}" data-theme="${t.id}" type="button">
+        <span class="tp-key">${i + 1}</span>
+        <span><span class="tp-nama">${t.nama}</span><span class="tp-desc">${t.desc}</span></span>
+        <span class="tp-check">✓</span>
+      </button>`).join("") +
+    `<div class="tp-note">Pintasan: tekan angka 1–6 · pilihan tersimpan otomatis</div>`;
+  menu.querySelectorAll(".tp-item").forEach(b =>
+    b.addEventListener("click", () => setTheme(b.dataset.theme)));
+}
+
+let menuTimer;
+function openMenu() {
+  const m = $("#tpMenu");
+  if (!m) return;
+  m.classList.add("open");
+  clearTimeout(menuTimer);
+  menuTimer = setTimeout(closeMenu, 12000); /* tutup otomatis (mode kiosk) */
+}
+function closeMenu() {
+  clearTimeout(menuTimer);
+  $("#tpMenu")?.classList.remove("open");
+}
+
+function setTheme(id) {
+  closeMenu();
+  if (!PAGE_SIZE[id] || id === state.theme) return;
+  state.theme = id;
+  try { localStorage.setItem("tvTheme", id); } catch {}
+  state.pageIdx = 0;
+  buildThemeMenu();
+  transitionSwap($("#main"), renderMain, 420);
+  showToast("Tema diterapkan: " + (THEMES.find(t => t.id === id) || {}).nama);
+}
+
+let toastTimer;
+function showToast(msg) {
+  const el = $("#toast");
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+}
+
+$("#tpBtn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  $("#tpMenu").classList.contains("open") ? closeMenu() : openMenu();
+});
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".tp-menu") && !e.target.closest(".tp")) closeMenu();
+});
+document.addEventListener("keydown", (e) => {
+  const n = parseInt(e.key, 10);
+  if (n >= 1 && n <= THEMES.length) setTheme(THEMES[n - 1].id);
+  if (e.key === "Escape") closeMenu();
+});
 
 /* ============================================================
    SUMBER DATA
@@ -971,6 +1508,7 @@ async function loadData() {
 
 /* ---------- INISIALISASI ---------- */
 $("#hdName").textContent = CONFIG.HOSPITAL_NAME;
+buildThemeMenu();
 renderFooter();
 renderOrnaments();
 renderAll();
