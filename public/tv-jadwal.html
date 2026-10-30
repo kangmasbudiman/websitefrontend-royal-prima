@@ -138,8 +138,9 @@
   .spot-photo img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
   .spot-photo svg { width:100%; height:100%; display:block; }
   .spot-nm {
-    margin-top:26px; font-size:62px; font-weight:800; line-height:1.08;
-    text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    margin-top:20px; font-size:46px; font-weight:800; line-height:1.14;
+    text-align:center; padding:0 12px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
     position:relative; z-index:2;
   }
   .spot-spec {
@@ -187,8 +188,9 @@
   .pair-photo img { width:100%; height:100%; object-fit:cover; object-position:top; display:block; }
   .pair-photo svg { width:100%; height:100%; display:block; }
   .pair-nm {
-    margin-top:16px; font-size:44px; font-weight:800; line-height:1.1;
-    max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    margin-top:14px; font-size:36px; font-weight:800; line-height:1.14;
+    max-width:100%; text-align:center;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
   }
   .pair-spec {
     margin-top:4px; font-size:26px; font-weight:700; color:rgba(255,255,255,.95);
@@ -277,8 +279,8 @@
   .row-ava svg { width:100%; height:100%; display:block; }
   .row-txt { min-width:0; }
   .row-nm {
-    font-size:24px; font-weight:800; color:#102A38; line-height:1.14;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    font-size:22px; font-weight:800; color:#102A38; line-height:1.16;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
   }
   .row-sub {
     margin-top:2px; display:flex; align-items:center; gap:8px;
@@ -412,8 +414,9 @@
   }
   .g1-st { position:absolute; top:14px; right:14px; z-index:3; }
   .g1-nm {
-    margin-top:16px; font-size:27px; font-weight:800; color:#102A38; line-height:1.15;
-    max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    margin-top:14px; font-size:23px; font-weight:800; color:#102A38; line-height:1.2;
+    max-width:100%;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
   }
   .g1-sp { margin-top:5px; font-size:21px; font-weight:800; color:var(--c,#0B5F7A); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
   .g1-po { margin-top:3px; font-size:19px; font-weight:600; color:#5A6B87; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
@@ -441,7 +444,7 @@
     box-shadow:0 5px 14px rgba(0,0,0,.22);
   }
   .l2-txt { flex:1; min-width:0; }
-  .l2-nm { font-size:24px; font-weight:800; color:#102A38; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .l2-nm { font-size:23px; font-weight:800; color:#102A38; line-height:1.2; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .l2-sp { margin-top:3px; font-size:19px; font-weight:800; color:var(--c,#0B5F7A); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .l2-po { margin-top:2px; font-size:18px; font-weight:600; color:#5A6B87; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .l2-r { display:flex; flex-direction:column; align-items:flex-end; gap:9px; flex:0 0 auto; }
@@ -494,7 +497,7 @@
     box-shadow:0 5px 14px rgba(0,0,0,.22);
   }
   .ls-txt { flex:1; min-width:0; }
-  .ls-nm { font-size:27px; font-weight:800; color:#102A38; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ls-nm { font-size:25px; font-weight:800; color:#102A38; line-height:1.18; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .ls-sp { margin-top:3px; font-size:20px; font-weight:800; color:var(--c,#0B5F7A); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ls-po { margin-top:2px; font-size:18px; font-weight:600; color:#5A6B87; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .ls-jam {
@@ -515,7 +518,7 @@
   .pt-strip { height:8px; flex:0 0 8px; background:var(--c,#0B5F7A); }
   .pt-body { padding:20px 22px 24px; text-align:center; display:flex; flex-direction:column; flex:1; min-height:0; }
   .pt-st { position:absolute; top:16px; left:16px; z-index:3; }
-  .pt-nm { font-size:26px; font-weight:800; color:#102A38; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pt-nm { font-size:24px; font-weight:800; color:#102A38; line-height:1.18; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   .pt-sp { margin-top:6px; font-size:21px; font-weight:800; color:var(--c,#0B5F7A); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .pt-po { margin-top:4px; font-size:18px; font-weight:600; color:#5A6B87; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .pt-jam {
@@ -552,7 +555,7 @@
     width:64px; height:64px; border-radius:50%; overflow:hidden; margin-left:24px;
     border:3.5px solid var(--c,#0B5F7A); background:var(--cd,#0B5F7A); flex:0 0 64px;
   }
-  .pb-nm { font-size:25px; font-weight:800; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:20px; }
+  .pb-nm { font-size:23px; font-weight:800; color:#fff; line-height:1.18; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; padding-right:20px; }
   .pb-sp { font-size:20px; font-weight:700; color:rgba(255,255,255,.92); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:16px; }
   .pb-po { font-size:19px; font-weight:600; color:#9DB6C6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:16px; }
   .pb-jam {
@@ -710,14 +713,17 @@ function photoEl(d, cls) {
     : `<div class="${cls}">${SIL}</div>`;
 }
 
-/* ---------- status dokter ---------- */
+/* ---------- status dokter ----------
+   menerima Date maupun angka menit — dibakukan ke menit dulu agar
+   perbandingan jam selalu benar (sebelumnya Date vs menit = selalu salah). */
 function statusOf(d, now) {
+  const n = now instanceof Date ? now.getHours() * 60 + now.getMinutes() : (now | 0);
   if (d.cuti) return { st:"tidak", label:"Tidak Praktek" };
   const sesi = d.sesi.filter(s => s.e > s.m);
   if (!sesi.length) return { st:"tidak", label:"Tidak Praktek" };
-  const live = sesi.find(s => now >= s.m && now < s.e);
+  const live = sesi.find(s => n >= s.m && n < s.e);
   if (live) return { st:"sedang", label:"Sedang Praktek", live };
-  if (sesi.some(s => s.m > now)) return { st:"akan", label:"Akan Praktek" };
+  if (sesi.some(s => s.m > n)) return { st:"akan", label:"Akan Praktek" };
   return { st:"selesai", label:"Selesai" };
 }
 
@@ -761,13 +767,8 @@ function cleanNama(raw) {
     .trim();
 }
 
-/* Nama pendek utk baris timeline: buang gelar terakhir selama masih kepanjangan */
-function shortName(raw) {
-  let s = cleanNama(raw);
-  let guard = 0;
-  while (s.length > 20 && s.includes(",") && guard++ < 3) s = s.replace(/,\s*[^,]+$/, "");
-  return s;
-}
+/* Nama pendek utk baris timeline tidak lagi dipakai — nama ditampilkan
+   lengkap dengan gelar (dipotong terbatas 2 baris oleh CSS clamp). */
 
 /* Label baris "Spesialis · Poli/Ruangan" tanpa pengulangan (termasuk sinonim, mis. Saraf ≈ Syaraf) */
 const _skel = (w) => w.toLowerCase().replace(/[^a-z]/g, "").replace(/[aeiouy]/g, "");
@@ -805,7 +806,6 @@ function normalize(list) {
     return {
       id: i,
       nama: cleanNama(d.nama) || "—",
-      namaShort: shortName(d.nama) || "—",
       spesialis: d.spesialis || "—",
       poli: d.poli || "Poli Umum",
       lok: d.lok || "",
@@ -1012,7 +1012,7 @@ function renderTimeline() {
               <div class="row-l">
                 ${photoEl(d,"row-ava")}
                 <div class="row-txt">
-                  <div class="row-nm">${d.namaShort}</div>
+                  <div class="row-nm">${d.nama}</div>
                   <div class="row-sub"><span class="dot ${s.st}"></span><span class="txt">${subLabel(d)}</span></div>
                 </div>
               </div>
@@ -1053,7 +1053,7 @@ function renderGrid() {
       <div class="g1-top"></div>
       ${photoEl(d,"g1-ava")}
       <span class="chip g1-st st-${s.st}">${s.label}</span>
-      <div class="g1-nm">${d.namaShort}</div>
+      <div class="g1-nm">${d.nama}</div>
       <div class="g1-sp">${d.spesialis}</div>
       <div class="g1-po">${d.poli}</div>
       <div class="g1-jam ${lines.length>2?"kecil":""}">${lines.map(l=>`<i>${l}</i>`).join("") || "—"}</div>
@@ -1069,7 +1069,7 @@ function renderListGrid() {
     return `<div class="l2-card ${s.st==="tidak"?"faded":""}" style="--c:${d.c};--cd:${d.cd};--ct:${d.c}22">
       ${photoEl(d,"l2-ava")}
       <div class="l2-txt">
-        <div class="l2-nm">${d.namaShort}</div>
+        <div class="l2-nm">${d.nama}</div>
         <div class="l2-sp">${d.spesialis}</div>
         <div class="l2-po">${d.poli}</div>
       </div>
@@ -1089,7 +1089,7 @@ function renderListRows() {
     return `<div class="ls-row ${s.st==="tidak"?"faded":""}" style="--c:${d.c};--cd:${d.cd}">
       ${photoEl(d,"ls-ava")}
       <div class="ls-txt">
-        <div class="ls-nm">${d.namaShort}</div>
+        <div class="ls-nm">${d.nama}</div>
         <div class="ls-sp">${d.spesialis}</div>
         <div class="ls-po">${d.poli}</div>
       </div>
@@ -1130,7 +1130,7 @@ function renderPotret() {
       <div class="pt-photo">${photoEl(d,"pt-img")}</div>
       <div class="pt-strip"></div>
       <div class="pt-body">
-        <div class="pt-nm">${d.namaShort}</div>
+        <div class="pt-nm">${d.nama}</div>
         <div class="pt-sp">${d.spesialis}</div>
         <div class="pt-po">${d.poli}</div>
         <div class="pt-jam">${lines.map(l=>`<i>${l}</i>`).join("") || "—"}</div>
@@ -1157,7 +1157,7 @@ function renderPapan() {
     const jam = jamLines(d).join("  ·  ");
     return `<div class="pb-row ${s.st==="tidak"?"faded":""}" style="--c:${d.c};--cd:${d.cd}">
       ${photoEl(d,"pb-ava")}
-      <div class="pb-nm">${d.namaShort}</div>
+      <div class="pb-nm">${d.nama}</div>
       <div class="pb-sp">${d.spesialis}</div>
       <div class="pb-po">${d.poli}</div>
       <div class="pb-jam ${jam?"":"kosong"}">${jam || "—"}</div>
